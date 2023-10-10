@@ -169,7 +169,7 @@ class PGAgent(nn.Module):
         """
         returns, current_sum = [], 0
         for r in reversed(rewards):
-            current_sum += r + self.gamma * current_sum
+            current_sum = r + self.gamma * current_sum
             returns.append(current_sum)
         returns.reverse()
         return returns

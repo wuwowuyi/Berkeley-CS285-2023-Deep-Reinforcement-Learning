@@ -1,3 +1,8 @@
+import json
+from datetime import datetime
+
+from torch.utils.tensorboard import SummaryWriter
+
 from cs285.agents.pg_agent import PGAgent
 
 import os
@@ -60,6 +65,21 @@ def run_training_loop(args):
         gae_lambda=args.gae_lambda,
     )
 
+    if args.tensorboard:
+        writer = SummaryWriter(f'{args.ts_path}/hw2-{env.spec.id}-{datetime.now().strftime("%y-%m-%d %H%M%S")}')
+        writer.add_text('hyperparameters',
+                        json.dumps(dict(env=env.spec.id, seed=args.seed,
+                                        learning_rate=args.learning_rate,
+                                        gamma=args.discount,
+                                        lam=args.gae_lambda,
+                                        n_layers=args.n_layers,
+                                        layer_size=args.layer_size,
+                                        use_baseline=args.use_baseline,
+                                        use_reward_to_go=args.use_reward_to_go,
+                                        normalize_advantages=args.normalize_advantages,
+                                        baseline_learning_rate=args.baseline_learning_rate,
+                                        baseline_gradient_steps=args.baseline_gradient_steps)))
+
     trajs = []
     total_envsteps = 0
     start_time = time.time()
@@ -108,6 +128,10 @@ def run_training_loop(args):
             print("Done logging...\n\n")
 
             logger.flush()
+
+            if args.tensorboard:
+                for k, v in logs.items():  # add scalars to tensorboard
+                    writer.add_scalar(k, v, itr)
 
         if args.video_log_freq != -1 and itr % args.video_log_freq == 0:
             print("\nCollecting video rollouts...")
@@ -160,6 +184,7 @@ def main():
     parser.add_argument("--scalar_log_freq", type=int, default=1)
 
     parser.add_argument("--action_noise_std", type=float, default=0)
+    parser.add_argument("--tensorboard", "-ts", action="store_true")
 
     args = parser.parse_args()
 
@@ -183,6 +208,12 @@ def main():
     args.logdir = logdir
     if not (os.path.exists(logdir)):
         os.makedirs(logdir)
+
+    # setup tensorboard path
+    ts_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../tensorboard_runs")
+    if not (os.path.exists(ts_path)):
+        os.makedirs(ts_path)
+    args.ts_path = ts_path
 
     run_training_loop(args)
 
