@@ -1,5 +1,4 @@
 ## My Note
-Add tensorboard, logged to `tensorboard_runs` folder.
 
 ## Experiments
 
@@ -18,7 +17,8 @@ Average return vs. number of environment steps for CartPole_v0 large batch exper
 
 All are on default parameters otherwise mentioned. From top to bottom:
 * Green line, reward-to-go and normalize advantages are both true. (learning rate 0.003)
-* Orange and blue line, only normalize advantages
+* Blue line, reward-to-go and normalize advantages are both true
+* Orange line, normalize advantages is true
 * Grey line, only reward_to_go
 * bottom green line, reward-to-go and normalize advantages are both false
 
