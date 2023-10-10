@@ -1,6 +1,3 @@
-import os
-import time
-
 from cs285.agents.pg_agent import PGAgent
 
 import os
@@ -63,22 +60,29 @@ def run_training_loop(args):
         gae_lambda=args.gae_lambda,
     )
 
+    trajs = []
     total_envsteps = 0
     start_time = time.time()
 
     for itr in range(args.n_iter):
         print(f"\n********** Iteration {itr} ************")
-        # TODO: sample `args.batch_size` transitions using utils.sample_trajectories
-        # make sure to use `max_ep_len`
-        trajs, envsteps_this_batch = None, None  # TODO
-        total_envsteps += envsteps_this_batch
+        # sample `args.batch_size` transitions using utils.sample_trajectories
+        while total_envsteps < args.batch_size:
+            # make sure to use `max_ep_len`
+            remaining_steps = args.batch_size - total_envsteps
+            traj = utils.sample_trajectory(env, agent.actor, min(remaining_steps, max_ep_len))
+            trajs.append(traj)
+            total_envsteps += len(traj['observation'])
 
         # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
         # this line converts this into a single dictionary of lists of NumPy arrays.
         trajs_dict = {k: [traj[k] for traj in trajs] for k in trajs[0]}
 
-        # TODO: train the agent using the sampled trajectories and the agent's update function
-        train_info: dict = None
+        # train the agent using the sampled trajectories and the agent's update function
+        train_info: dict = agent.update(trajs_dict['observation'],
+                                        trajs_dict['action'],
+                                        trajs_dict['reward'],
+                                        trajs_dict['terminal'])
 
         if itr % args.scalar_log_freq == 0:
             # save eval metrics
