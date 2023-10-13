@@ -23,7 +23,7 @@ Average return vs. number of environment steps for CartPole_v0 large batch exper
 #### CartPole Summary
 In the CartPole env experiments, large batch experiments generally have better performance than small batch ones, especially when not use reward-to-go or normalization.
 
-### 4.2 HalfCheetah Experiments
+### 4.2 HalfCheetah-v4 Experiments
 Below is the baseline loss:
 ![HalfCheetah baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/baseline_loss.png)
 
@@ -40,7 +40,7 @@ We can see that decreasing baseline learning rate or gradient steps decreases pe
 ![HalfCheetah decreased baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning_loss.png)
 ![HalfCheetah decreased baseline learning](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning.png)
 
-Normalize advantages can improve performance, especially when there is no baseline.
+Normalize advantages can improve performance, especially when there is no baseline, as shown below.
 * light blue line has both baseline and normalized advantages.
 * red line has only baseline
 * dark blue line has no baseline, but normalized advantages.
