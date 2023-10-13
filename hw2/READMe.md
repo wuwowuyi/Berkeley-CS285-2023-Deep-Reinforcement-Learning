@@ -37,11 +37,12 @@ Above is the eval average return. Red line is the baseline verion, orange has no
 ![HalfCheetah decreased baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning_loss.png)
 ![HalfCheetah decreased baseline learning](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning.png)
 
-Above are decrease baseline learning rate or steps.
+Above are decreased baseline learning rate or gradient steps.
 * the red line uses hyperparameters provided by assignment
 * the green line decreases baseline learning rate from 0.01 to 0.005.
 * the pink line decreases baseline gradient steps from 5 to 1.
-We can see to decrease baseline learning rate and gradient steps decrease performance.
+
+We can see that decreasing baseline learning rate or gradient steps decreases performance.
 
 ![HalfCheetah normalize advantage](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/normalize_advantage.png)
 
@@ -50,6 +51,7 @@ Normalize advantages can improve performance, especially when there is no baseli
 * red line has only baseline
 * dark blue line has no baseline, but has normalized advantages.
 * orange line has neither.
+
 All are on hyperparameters provided by assignment.
 
 
