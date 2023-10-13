@@ -78,7 +78,6 @@ class MLPPolicy(nn.Module):
         flexible objects, such as a `torch.distributions.Distribution` object. It's up to you!
         """
         return self._distribution(obs)
-        #return dist.rsample(sample_shape=(obs.shape[0],))  # TODO: what's difference between forward() and get_action?
 
     def update(self, obs: np.ndarray, actions: np.ndarray, *args, **kwargs) -> dict:
         """Performs one iteration of gradient descent on the provided batch of data."""
@@ -102,7 +101,9 @@ class MLPPolicyPG(MLPPolicy):
         self.optimizer.zero_grad()
         dist = self(obs)
         logp = dist.log_prob(actions)
-        loss = -(logp * advantages).mean()
+        if logp.dim() > 1:
+            logp = logp.sum(-1)
+        loss = -(logp * advantages).sum()
         loss.backward()
         self.optimizer.step()
 

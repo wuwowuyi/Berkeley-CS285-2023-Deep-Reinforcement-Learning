@@ -36,7 +36,7 @@ class ValueCritic(nn.Module):
 
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
         # implement the forward pass of the critic network
-        return self.network(obs)
+        return self.network(obs).squeeze()  # the output value should always have dimension 1.
 
     def update(self, obs: np.ndarray, q_values: np.ndarray) -> dict:
         obs = ptu.from_numpy(obs)

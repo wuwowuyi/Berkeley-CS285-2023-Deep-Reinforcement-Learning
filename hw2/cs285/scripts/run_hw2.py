@@ -79,19 +79,21 @@ def run_training_loop(args):
                                     baseline_gradient_steps=args.baseline_gradient_steps,
                                     epochs=args.n_iter, batch_size=args.batch_size)))
 
-    trajs = []
     total_envsteps = 0
     start_time = time.time()
-
     for itr in range(args.n_iter):
         print(f"\n********** Iteration {itr} ************")
+        trajs = []
+        epoch_steps = 0
         # sample `args.batch_size` transitions using utils.sample_trajectories
-        while total_envsteps < args.batch_size:
+        while epoch_steps < args.batch_size:
             # make sure to use `max_ep_len`
-            remaining_steps = args.batch_size - total_envsteps
+            remaining_steps = args.batch_size - epoch_steps
             traj = utils.sample_trajectory(env, agent.actor, min(remaining_steps, max_ep_len))
             trajs.append(traj)
-            total_envsteps += len(traj['observation'])
+            traj_step = len(traj['observation'])
+            total_envsteps += traj_step
+            epoch_steps += traj_step
 
         # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
         # this line converts this into a single dictionary of lists of NumPy arrays.
