@@ -1,50 +1,44 @@
 ## My Note
 
 ## Experiments
+**Experiments use hyperparameters provided by assignment, otherwise specified**.
 
 ### 3.2 Cartpole Experiments
 Average return vs. number of environment steps for CartPole_v0 small batch experiments. 
 ![CartPole small batch](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/cartpole_small.png)
 
-All are on default parameters. From top to bottom are:
-* Reward-to-go and normalize advantages are both true
-* normalize advantages is true
-* reward-to-go is true
-* Reward-to-go and normalize advantages are both false
+* Dark blue line, only normalize advantages
+* Orange line, only reward-to-go
+* Red line, both normalize advantages and reward-to-go
+* Gray line, neith normalize advantages or reward-to-go
 
 Average return vs. number of environment steps for CartPole_v0 large batch experiments.
 ![CartPole large batch](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/cartpole_large.png)
 
-All are on default parameters otherwise mentioned. From top to bottom:
-* Green line, reward-to-go and normalize advantages are both true. (learning rate 0.003)
-* Blue line, reward-to-go and normalize advantages are both true
-* Orange line, normalize advantages is true
-* Grey line, only reward_to_go
-* bottom green line, reward-to-go and normalize advantages are both false
+* Green line, only normalize advantages (most stable performance)
+* Pink line, only reward-to-go (also converge fast, but not as stable as green line.)
+* Gray line, both reward-to-go and normalize advantages (converge relatively slower)
+* Blue line, has neither, sort of fluctuating. 
 
 #### CartPole Summary
-In the CartPole env experiments, Normalize advantages is more important than reward-to-go to reduce variance. When training on large batches, the model seems to "overfit". We either need to reduce learning rate or stop training.
+In the CartPole env experiments, large batch generally has better performance than small batch, especially when not use reward-to-go or normalization.
 
 ### 4.2 HalfCheetah Experiments
+Below is the baseline loss:
 ![HalfCheetah baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/baseline_loss.png)
 
-Above is the baseline loss, using hyperparameters provided by assignment, i.e., `--env_name HalfCheetah-v4 -n 100 -b 5000 -rtg --discount 0.95 -lr 0.01 --use_baseline -blr 0.01 -bgs 5 --exp_name cheetah_baseline`.
-
+Below is the eval average return. Red line is the baseline version, orange line has no baseline.
 ![HalfCheetah average return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/eval_average_return.png)
 
-Above is the eval average return. Red line is the baseline verion, orange has no baseline. Both use hyperparameters provided by assignment.
-
-![HalfCheetah decreased baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning_loss.png)
-![HalfCheetah decreased baseline learning](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning.png)
-
-Above are decreased baseline learning rate or gradient steps.
+Below are decreased baseline learning rate or gradient steps.
 * the red line uses hyperparameters provided by assignment
 * the green line decreases baseline learning rate from 0.01 to 0.005.
 * the pink line decreases baseline gradient steps from 5 to 1.
 
-We can see that decreasing baseline learning rate or gradient steps decreases performance.
+![HalfCheetah decreased baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning_loss.png)
+![HalfCheetah decreased baseline learning](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/decreased_learning.png)
 
-![HalfCheetah normalize advantage](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/normalize_advantage.png)
+We can see that decreasing baseline learning rate or gradient steps decreases performance.
 
 Normalize advantages can improve performance, especially when there is no baseline.
 * light blue line has both baseline and normalized advantages.
@@ -52,7 +46,7 @@ Normalize advantages can improve performance, especially when there is no baseli
 * dark blue line has no baseline, but has normalized advantages.
 * orange line has neither.
 
-All are on hyperparameters provided by assignment.
+![HalfCheetah normalize advantage](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/normalize_advantage.png)
 
 
 
