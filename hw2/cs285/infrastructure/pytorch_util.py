@@ -62,11 +62,17 @@ def build_mlp(
     return mlp
 
 
-def init_gpu(use_gpu=True, gpu_id=0):
+def init_gpu(use_gpu=True, gpu_id=0, use_mps=False):
+    """
+    Add support to MPS framework. This speeds up training on Mac with Apple silicons.
+    """
     global device
     if torch.cuda.is_available() and use_gpu:
         device = torch.device("cuda:" + str(gpu_id))
         print("Using GPU id {}".format(gpu_id))
+    elif use_mps:
+        device = torch.device("mps")
+        print(f'Use MPS device')
     else:
         device = torch.device("cpu")
         print("Using CPU.")

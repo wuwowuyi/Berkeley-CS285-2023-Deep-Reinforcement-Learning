@@ -26,7 +26,7 @@ def run_training_loop(args):
     # set random seeds
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu)
+    ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu, use_mps=args.mps_support)
 
     # make the gym environment
     env = gym.make(args.env_name, render_mode=None)
@@ -179,8 +179,8 @@ def main():
     parser.add_argument("--which_gpu", "-gpu_id", default=0)
     parser.add_argument("--video_log_freq", type=int, default=-1)
     parser.add_argument("--scalar_log_freq", type=int, default=1)
-
     parser.add_argument("--action_noise_std", type=float, default=0)
+    parser.add_argument("--mps_support", "-mps", action="store_true")
 
     args = parser.parse_args()
 

@@ -79,7 +79,7 @@ class MLPPolicy(nn.Module):
         """
         return self._distribution(obs)
 
-    def update(self, obs: np.ndarray, actions: np.ndarray, *args, **kwargs) -> dict:
+    def update(self, obs: torch.Tensor, actions: torch.Tensor, *args, **kwargs) -> dict:
         """Performs one iteration of gradient descent on the provided batch of data."""
         raise NotImplementedError
 
@@ -89,15 +89,11 @@ class MLPPolicyPG(MLPPolicy):
 
     def update(
         self,
-        obs: np.ndarray,
-        actions: np.ndarray,
-        advantages: np.ndarray,
+        obs: torch.Tensor,
+        actions: torch.Tensor,
+        advantages: torch.Tensor,
     ) -> dict:
         """Implements the policy gradient actor update."""
-        obs = ptu.from_numpy(obs)
-        actions = ptu.from_numpy(actions)
-        advantages = ptu.from_numpy(advantages)
-
         self.optimizer.zero_grad()
         dist = self(obs)
         logp = dist.log_prob(actions)

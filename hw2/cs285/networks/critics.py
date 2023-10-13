@@ -38,10 +38,7 @@ class ValueCritic(nn.Module):
         # implement the forward pass of the critic network
         return self.network(obs).squeeze()  # the output value should always have dimension 1.
 
-    def update(self, obs: np.ndarray, q_values: np.ndarray) -> dict:
-        obs = ptu.from_numpy(obs)
-        q_values = ptu.from_numpy(q_values)
-
+    def update(self, obs: torch.Tensor, q_values: torch.Tensor) -> dict:
         # update the critic using the observations and q_values
         self.optimizer.zero_grad()
         loss = (torch.square(self(obs) - q_values)).mean()
