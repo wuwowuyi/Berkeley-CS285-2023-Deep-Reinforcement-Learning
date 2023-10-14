@@ -59,10 +59,23 @@ Average return with different λ (seed=1):
 * green line, λ=0
 * dark blue line, λ=0.95
 
-λ=1 and λ=0.99 have the best performance. 
+λ=1 and λ=0.99 have the best performance. λ=1 takes into account of all future rewards until terminal, λ=0.99 considers roughly the next 100 steps.
 
 ![LunarLander return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/lunar_lander_return.png)
 
 λ=1 is equivalent to Monte Carlo advantage, i.e., `advantage(t) = Q(a_t,s_t) - V(s_t)`
 
 λ=0 is equivalent to one step delta (TD error), i.e., `advantage(t) = reward(t) + gamma * V(s_t+1) - V(t)`
+
+### Experiment 4. InvertedPendulum-v4
+
+The best hyperparameter setting that reaches maximum performance with as few environment steps as possible is `--discount 0.9 --gae_lambda 0.99 -rtg --use_baseline -na -lr 0.01 -n 60 --batch_size 2500`. Below is average return with 5 different seeds.
+
+![InvertedPendulum default return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/ip_best_return.png)
+
+With default settings, i.e., `-rtg --use_baseline -na -n 100 --batch_size 5000`, below is the average return over 5 different seeds:
+![InvertedPendulum default return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/ip_default_return.png)
+
+Two best runs of best hyperparameters and default.
+
+![InvertedPendulum default return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/ip_two_best.png)
