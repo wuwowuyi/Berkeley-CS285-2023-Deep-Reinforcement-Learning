@@ -3,7 +3,7 @@
 ## Experiments
 **Experiments use hyperparameters provided by assignment, otherwise specified**.
 
-### 3.2 Cartpole Experiments
+### Experiment 1. Cartpole-v0
 Average return vs. number of environment steps for CartPole_v0 small batch experiments. 
 * Dark blue line, only normalize advantages
 * Orange line, only reward-to-go
@@ -23,7 +23,7 @@ Average return vs. number of environment steps for CartPole_v0 large batch exper
 #### CartPole Summary
 In the CartPole env experiments, large batch experiments generally have better performance than small batch ones, especially when not use reward-to-go or normalization.
 
-### 4.2 HalfCheetah-v4 Experiments
+### Experiment 2. HalfCheetah-v4 
 Below is the baseline loss:
 ![HalfCheetah baseline loss](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/baseline_loss.png)
 
@@ -49,7 +49,20 @@ Normalize advantages can improve performance, especially when there is no baseli
 ![HalfCheetah normalize advantage](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/normalize_advantage.png)
 
 
+### Experiment 3. LunarLander-v2
+hyperparameters provided by assignment: `--ep_len 1000 --discount 0.99 -n 300 -l 3 -s 128 -b 2000 -lr 0.001 --use_reward_to_go --use_baseline --gae_lambda <λ>`
 
+Average return with different λ (seed=1):
+* pink line, λ=1
+* light blue line, λ=0.99
+* red line, λ=0.98
+* green line, λ=0
+* dark blue line, λ=0.95
 
+λ=1 and λ=0.99 have the best performance. 
 
+![LunarLander return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw2/lunar_lander_return.png)
 
+λ=1 is equivalent to Monte Carlo advantage, i.e., `advantage(t) = Q(a_t,s_t) - V(s_t)`
+
+λ=0 is equivalent to one step delta (TD error), i.e., `advantage(t) = reward(t) + gamma * V(s_t+1) - V(t)`

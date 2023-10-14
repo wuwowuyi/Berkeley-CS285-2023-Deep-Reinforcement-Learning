@@ -74,6 +74,8 @@ class PGAgent(nn.Module):
             obs, rewards, q_values, terminals
         )
 
+        obs, actions, advantages, q_values = map(ptu.from_numpy, (obs, actions, advantages, q_values))
+
         # step 3: use all datapoints (s_t, a_t, adv_t) to update the PG actor/policy
         # update the PG actor/policy network once using the advantages
         info: dict = self.actor.update(obs, actions, advantages)
@@ -135,13 +137,13 @@ class PGAgent(nn.Module):
                 # HINT: append a dummy T+1 value for simpler recursive calculation
                 values = np.append(values, [0])
                 advantages = np.zeros(batch_size + 1)
-                td_error = rewards + (1 - terminals) * (self.gamma * values[1:] - values[:1])
+                td_error = rewards + (1 - terminals) * self.gamma * values[1:] - values[:1]
 
                 for i in reversed(range(batch_size)):
                     # recursively compute advantage estimates starting from timestep T.
                     # HINT: use terminals to handle edge cases. terminals[i] is 1 if the state is the last in its
                     # trajectory, and 0 otherwise.
-                    advantages[i] = td_error[i] + self.gamma * self.gae_lambda * ((1 - terminals[i]) * advantages[i+1])
+                    advantages[i] = td_error[i] + (1 - terminals[i]) * self.gamma * self.gae_lambda * advantages[i+1]
 
                 # remove dummy advantage
                 advantages = advantages[:-1]
