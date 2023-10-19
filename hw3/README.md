@@ -20,11 +20,11 @@ eval return over 3 seeds, a lot lower than with learning rate 0.001.
 
 Q-values comparison. blue line is learning rate 0.001, red line 0.05.
 
-![CartPole](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-lr-qvalues.png)
+![CartPole](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-qvalues.png)
 
 Critic loss comparison, blue line is learning rate 0.001, red line 0.05.
 
-![CartPole](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-lr-critic.png)
+![CartPole](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-critic.png)
 
 With learning rate 0.05, Q-values seem severely overestimated, so as critic loss.
 
