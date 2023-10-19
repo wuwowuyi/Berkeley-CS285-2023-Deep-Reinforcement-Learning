@@ -18,11 +18,11 @@ DQN algorithm implementation.
 eval return over 3 seeds, a lot lower than with learning rate 0.001.
 ![CartPole increased learning rate](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-lr.png)
 
-Q-values comparison. blue line is learning rate 0.001, red line 0.05.
+Q-values comparison. blue line is learning rate 0.05, red line 0.001.
 
 ![CartPole q-values comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-qvalues.png)
 
-Critic loss comparison, blue line is learning rate 0.001, red line 0.05.
+Critic loss comparison, blue line is learning rate 0.05, red line 0.001.
 
 ![CartPole critic comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole-critic.png)
 
