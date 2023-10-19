@@ -69,7 +69,10 @@ class DQNAgent(nn.Module):
         # Compute target values
         with torch.no_grad():
             if self.use_double_q:
-                raise NotImplementedError
+                values = self.critic(next_obs)
+                best_action = torch.argmax(values, -1, keepdim=True)
+                t_values = self.target_critic(next_obs)
+                next_q_values = torch.gather(t_values, -1, best_action).squeeze()
             else:
                 next_q_values = torch.max(self.critic(next_obs), -1)[0]
 
