@@ -1,3 +1,4 @@
+import json
 import time
 import argparse
 
@@ -91,7 +92,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         epsilon = exploration_schedule.value(step)
         # Compute action
         with torch.no_grad():
-            obs = ptu.from_numpy(observation)[None]  # [None] to add the batch dimension
+            obs = ptu.from_numpy(np.asarray(observation))[None]  # [None] to add the batch dimension
             action = agent.get_action(obs, epsilon)
         # Step the environment
         next_observation, rew, done, info = env.step(action)
@@ -101,7 +102,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         if isinstance(replay_buffer, MemoryEfficientReplayBuffer):
             # We're using the memory-efficient replay buffer,
             # so we only insert next_observation (not observation)
-            replay_buffer.insert(action, rew, next_observation, done)
+            replay_buffer.insert(action, rew, np.asarray(next_observation)[-1, ...], done)
         else:
             # We're using the regular replay buffer
             replay_buffer.insert(observation, action, rew, next_observation, done)

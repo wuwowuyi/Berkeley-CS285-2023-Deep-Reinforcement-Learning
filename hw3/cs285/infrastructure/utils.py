@@ -35,7 +35,7 @@ def sample_trajectory(
             )
 
         # TODO use the most recent ob to decide what to do
-        ac = policy.get_action(ptu.from_numpy(ob)[None])
+        ac = policy.get_action(ptu.from_numpy(np.asarray(ob))[None])
 
         # TODO: take that action and get reward and next ob
         next_ob, rew, done, info = env.step(ac)

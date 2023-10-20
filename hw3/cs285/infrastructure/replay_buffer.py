@@ -227,11 +227,11 @@ class MemoryEfficientReplayBuffer:
             )
         """
         if isinstance(reward, (float, int)):
-            reward = np.array(reward)
+            reward = np.array(reward, dtype=np.float32)
         if isinstance(done, bool):
-            done = np.array(done)
+            done = np.array(done, dtype=np.uint8)
         if isinstance(action, int):
-            action = np.array(action, dtype=np.int64)
+            action = np.array(action, dtype=np.uint8)  # for discrete actions, 256 should be enough
 
         assert (
             next_observation.ndim == 2

@@ -68,13 +68,13 @@ class DQNAgent(nn.Module):
 
         # Compute target values
         with torch.no_grad():
-            if self.use_double_q:
+            if self.use_double_q:  # to alleviate over-estimating Q-value
                 values = self.critic(next_obs)
                 best_action = torch.argmax(values, -1, keepdim=True)
                 t_values = self.target_critic(next_obs)
                 next_q_values = torch.gather(t_values, -1, best_action).squeeze()
             else:
-                next_q_values = torch.max(self.critic(next_obs), -1)[0]
+                next_q_values = torch.max(self.target_critic(next_obs), -1)[0]  # use target to stabilize training
 
             target_values = reward + (1 - done) * self.discount * next_q_values
 
