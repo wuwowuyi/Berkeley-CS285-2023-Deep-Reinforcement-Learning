@@ -5,12 +5,12 @@
 DQN algorithm implementation.
 
 #### CartPole-v1 eval return over 3 seeds, 1, 2, and 3.
-`-cfg experiments/dqn/cartpole.yaml`
+`python cs285/scripts/run_hw3_dqn.py -cfg experiments/dqn/cartpole.yaml --seed <seed>`
 
 ![CartPole](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/cartpole.png)
 
 #### LunarLander-v2 eval return over 3 seeds, 1, 2, and 3.
-`-cfg experiments/dqn/lunarlander.yaml`
+`python cs285/scripts/run_hw3_dqn.py -cfg experiments/dqn/lunarlander.yaml --seed <seed>`
 
 ![LunarLander](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/lunarlander.png)
 
@@ -28,3 +28,15 @@ Critic loss comparison, blue line is learning rate 0.05, red line 0.001.
 
 With learning rate 0.05, Q-values seem severely overestimated, so as critic loss.
 
+### Double Q-learning
+#### LunarLander-v2 double Q-learning 
+
+Eval return over 3 different seeds.
+
+![LunarLander comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/lunarlander-dq-eval.png)
+
+Train return over 3 different seeds.
+
+![LunarLander comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/lunarlander-dq-train.png)
+
+The reason for the difference, I understand, is because in training action selection is epsilon-greedy, and in eval action selection is deterministic.
