@@ -197,6 +197,19 @@ def main():
     config = make_config(args.config_file)
     logger = make_logger(logdir_prefix, config)
 
+    logger.log_text('hyperparameters',
+                    json.dumps(dict(seed=args.seed,
+                                    config_file=args.config_file,
+                                    log_name=config['log_name'],
+                                    total_steps=config['total_steps'],
+                                    batch_size=config['batch_size'],
+                                    learning_starts=config['learning_starts'],
+                                    discount=config['agent_kwargs']['discount'],
+                                    target_update_period=config['agent_kwargs']['target_update_period'],
+                                    clip_grad_norm=config['agent_kwargs']['clip_grad_norm'],
+                                    use_double_q=config['agent_kwargs']['use_double_q']
+                                    )))
+
     run_training_loop(config, logger, args)
 
 
