@@ -96,16 +96,16 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
             action = agent.get_action(obs, epsilon)
         # Step the environment
         next_observation, rew, done, info = env.step(action)
-        truncated = info.get("TimeLimit.truncated", False)  # not used?
+        truncated = info.get("TimeLimit.truncated", False)  # if truncated, next_observation is relevant.
 
         # Add the data to the replay buffer
         if isinstance(replay_buffer, MemoryEfficientReplayBuffer):
             # We're using the memory-efficient replay buffer,
             # so we only insert next_observation (not observation)
-            replay_buffer.insert(action, rew, np.asarray(next_observation)[-1, ...], done)
+            replay_buffer.insert(action, rew, np.asarray(next_observation)[-1, ...], done and not truncated)
         else:
             # We're using the regular replay buffer
-            replay_buffer.insert(observation, action, rew, next_observation, done)
+            replay_buffer.insert(observation, action, rew, next_observation, done and not truncated)
 
         # Handle episode termination
         if done:
