@@ -25,6 +25,8 @@ def make_tanh_transformed(
     if std.shape == ():
         std = std.expand(mean.shape)
 
+    # see https://bochang.me/blog/posts/pytorch-distributions/ in understanding shapes
+    # including batch_shape, event_shape, etc.
     return D.Independent(
         D.TransformedDistribution(
             base_distribution=D.Normal(mean, std),

@@ -45,7 +45,7 @@ class MLPPolicy(nn.Module):
                 assert fixed_std is None
                 self.net = ptu.build_mlp(
                     input_size=ob_dim,
-                    output_size=2*ac_dim,
+                    output_size=2*ac_dim,  # mean and std of diagonal Gaussian
                     n_layers=n_layers,
                     size=layer_size,
                 ).to(ptu.device)
@@ -83,9 +83,9 @@ class MLPPolicy(nn.Module):
                 if self.fixed_std:
                     std = self.std
                 else:
-                    std = torch.nn.functional.softplus(self.std) + 1e-2
+                    std = torch.nn.functional.softplus(self.std) + 1e-2  # to make sure std is positive?
 
-            if self.use_tanh:
+            if self.use_tanh:  # bounded action
                 action_distribution = make_tanh_transformed(mean, std)
             else:
                 return make_multi_normal(mean, std)
