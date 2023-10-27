@@ -234,7 +234,7 @@ class SoftActorCritic(nn.Module):
         """
         # Compute the entropy of the action distribution.
         # Note: Think about whether to use .rsample() or .sample() here...
-        num_samples = 100  # arbitrary number
+        num_samples = 10  # arbitrary number. 10 should be Ok since batch makes an average too.
         sampled_act = action_distribution.rsample((num_samples, ))  # shape=(num_samples, batch_size, act_dim)
         logp = action_distribution.log_prob(sampled_act)  # shape=(num_samples, batch_size)
         return torch.mean(-logp, dim=0)  # return's shape=(batch_size,)
@@ -255,7 +255,7 @@ class SoftActorCritic(nn.Module):
             ), action.shape
 
             # Compute Q-values for the current state-action pair
-            q_values = self.critic(obs.expand((self.num_actor_samples, *obs)), action)
+            q_values = self.critic(obs.expand((self.num_actor_samples, *obs.shape)), action)
             assert q_values.shape == (
                 self.num_critic_networks,
                 self.num_actor_samples,
