@@ -68,7 +68,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
             action = env.action_space.sample()
         else:
             # Select an action
-            action = agent.get_action(observation)
+            action = agent.get_action(ptu.from_numpy(observation)[None])
 
         # Step the environment and add the data to the replay buffer
         next_observation, reward, done, info = env.step(action)
