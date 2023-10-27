@@ -159,7 +159,7 @@ class SoftActorCritic(nn.Module):
         # If our backup strategy removed a dimension, add it back in explicitly
         # (assume the target for each critic will be the same)
         if next_qs.shape == (batch_size,):
-            next_qs = next_qs[None].expand((self.num_critic_networks, batch_size)).contiguous()
+            next_qs = next_qs.expand((self.num_critic_networks, batch_size)).contiguous()
 
         assert next_qs.shape == (
             self.num_critic_networks,
@@ -204,12 +204,12 @@ class SoftActorCritic(nn.Module):
             if self.use_entropy_bonus and self.backup_entropy:
                 # Add entropy bonus to the target values for SAC
                 next_action_entropy = self.temperature * self.entropy(next_action_distribution)
-                next_qs += next_action_entropy[None].expand(self.num_critic_networks, batch_size)
+                next_qs += next_action_entropy.expand(self.num_critic_networks, batch_size)
 
             # Compute the target Q-value, whose shape must be (num_critics, batch_size)
             # expand shape to (num_critics, batch_size)
-            r = reward[None].expand((self.num_critic_networks, batch_size))
-            d = (1 - done)[None].expand((self.num_critic_networks, batch_size))
+            r = reward.expand((self.num_critic_networks, batch_size))
+            d = (1 - done).expand((self.num_critic_networks, batch_size))
             target_values: torch.Tensor = r + self.discount * d * next_qs
 
         # Update the critic
@@ -255,8 +255,7 @@ class SoftActorCritic(nn.Module):
             ), action.shape
 
             # Compute Q-values for the current state-action pair
-            o = obs[None].expand((self.num_actor_samples, batch_size, self.observation_shape[0]))
-            q_values = self.critic(o, action)
+            q_values = self.critic(obs.expand((self.num_actor_samples, *obs)), action)
             assert q_values.shape == (
                 self.num_critic_networks,
                 self.num_actor_samples,
