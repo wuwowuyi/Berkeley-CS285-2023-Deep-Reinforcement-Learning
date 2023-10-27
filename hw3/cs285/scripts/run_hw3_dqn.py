@@ -111,6 +111,15 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         if done:
             reset_env_training()
 
+            """
+            See https://gymnasium.farama.org/api/experimental/wrappers/#gymnasium.experimental.wrappers.RecordEpisodeStatisticsV0
+            on what the episode dict in info contains:
+            "episode": {
+                "r": "<cumulative reward>",
+                "l": "<episode length>",
+                "t": "<elapsed time since beginning of episode>"
+            }
+            """
             logger.log_scalar(info["episode"]["r"], "train_return", step)
             logger.log_scalar(info["episode"]["l"], "train_ep_len", step)
         else:

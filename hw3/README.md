@@ -40,3 +40,11 @@ Train return over 3 different seeds.
 ![LunarLander comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/lunarlander-dq-train.png)
 
 The reason for the difference, I understand, is because in training action selection is epsilon-greedy, and in eval action selection is deterministic.
+
+#### MsPacman
+
+![MsPacman train return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/mspacman_train_return.png)
+![MsPacman eval return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/mspacman_eval_return.png)
+
+During early training, the eval_return increases, but train_return is flattened. This is because when sample an action from the DQN agent, training uses a higher epsilon (close to 1) than the default value (0.02) used by eval. 
+
