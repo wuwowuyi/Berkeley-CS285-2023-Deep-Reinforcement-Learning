@@ -149,9 +149,9 @@ class SoftActorCritic(nn.Module):
         # Implement the different backup strategies.
         if num_critic_networks > 1:
             if self.target_critic_backup_type == "doubleq":
-                next_qs = torch.stack([next_qs[i] for i in range(num_critic_networks, -1, -1)])
+                next_qs = torch.stack([next_qs[i] for i in range(num_critic_networks-1, -1, -1)])
             elif self.target_critic_backup_type == "min":
-                next_qs = torch.min(next_qs, dim=0, keepdim=True)[0]
+                next_qs = torch.min(next_qs, dim=0)[0]
             else:
                 # Default, we don't need to do anything.
                 pass
@@ -264,7 +264,8 @@ class SoftActorCritic(nn.Module):
 
             # Our best guess of the Q-values is the mean of the ensemble
             q_values = torch.mean(q_values, dim=0)  # shape becomes (num_actor_samples, batch_size)
-            advantage = q_values
+            advantage = q_values - q_values.mean(dim=1, keepdim=True)  # normalize within batch
+            advantage /= q_values.std(dim=1, keepdim=True) + 1e-8
 
         # Do REINFORCE: calculate log-probs and use the Q-values
         log_probs = action_distribution.log_prob(action)  # shape is (num_actor_samples, batch_size)
