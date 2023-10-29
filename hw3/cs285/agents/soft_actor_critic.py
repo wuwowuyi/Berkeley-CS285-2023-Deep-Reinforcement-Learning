@@ -152,6 +152,8 @@ class SoftActorCritic(nn.Module):
                 next_qs = torch.stack([next_qs[i] for i in range(num_critic_networks-1, -1, -1)])
             elif self.target_critic_backup_type == "min":
                 next_qs = torch.min(next_qs, dim=0)[0]
+            elif self.target_critic_backup_type == "mean":
+                next_qs = torch.mean(next_qs, dim=0)
             else:
                 # Default, we don't need to do anything.
                 pass
@@ -193,8 +195,6 @@ class SoftActorCritic(nn.Module):
             # Handle Q-values from multiple different target critic networks (if necessary)
             # (For double-Q, clip-Q, etc.)
             next_qs: torch.Tensor = self.q_backup_strategy(next_qs)
-
-            # next_qs = self.q_backup_strategy(next_qs)  # why do we need to run this again?
 
             assert next_qs.shape == (
                 self.num_critic_networks,
