@@ -48,3 +48,37 @@ The reason for the difference, I understand, is because in training action selec
 
 During early training, the eval_return increases, but train_return is flattened. This is because when sample an action from the DQN agent, training uses a higher epsilon (close to 1) than the default value (0.02) used by eval. 
 
+
+## Continuous Actions with Actor-Critic
+
+### HalfCheetah reinforce
+Configuration files are `halfcheetah_reinforce1.yaml` and `halfcheetah_reinforce10.yaml`. 
+
+![Halfcheetah reinforce eval return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/halfcheetah_reinforce.png)
+
+`halfcheetah_reinforce10.yaml` has better performance because Q-values has lower variance.
+
+### HalfCheetah reparametrize
+configuration file `halfcheetah_reparametrize.yaml`
+
+![Halfcheetah eval return comparison](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/halfcheetah_reparametrize.png)
+
+`halfcheetah_reparametrize.yaml` has the best performance compared with reinforcement1 and reinforcement10.
+
+### Humanoid-v4 1M steps, single q-values
+configuration file `humanoid_sac.yaml`
+![Humanoid 1M steps](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/humanoid_1m.png)
+
+### Hopper-v4 
+configuration files are `hopper.yaml`, `hopper_clipq.yaml`, `hopper_doubleq.yaml`.
+![Hopper eval return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/hopper_eval_return.png)
+
+![Hopper q_values](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/hopper_q_values.png)
+
+clipq has the best performance and lowest `q_values`, which means clipq's Q-values has the most accurate estimation. The single-Q's performance is the worst, and the most overestimated q-values.
+
+### Humanoid-v4 5M steps, clipq
+configuration file is `humanoid.yaml`.
+
+![Humanoid 5m clipq return](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw3/result_plots/humanoid_5m.png)
+
