@@ -13,7 +13,7 @@ class ModelBasedAgent(nn.Module):
         make_dynamics_model: Callable[[Tuple[int, ...], int], nn.Module],
         make_optimizer: Callable[[nn.ParameterList], torch.optim.Optimizer],
         ensemble_size: int,
-        mpc_horizon: int,
+        mpc_horizon: int,  # length of an action sequence
         mpc_strategy: str,
         mpc_num_action_sequences: int,
         cem_num_iters: Optional[int] = None,
@@ -69,7 +69,7 @@ class ModelBasedAgent(nn.Module):
             "obs_delta_std", torch.ones(self.ob_dim, device=ptu.device)
         )
 
-    def update(self, i: int, obs: np.ndarray, acs: np.ndarray, next_obs: np.ndarray):
+    def update(self, i: int, obs: np.ndarray, acs: np.ndarray, next_obs: np.ndarray) -> np.ndarray:
         """
         Update self.dynamics_models[i] using the given batch of data.
 
@@ -82,15 +82,17 @@ class ModelBasedAgent(nn.Module):
         obs = ptu.from_numpy(obs)
         acs = ptu.from_numpy(acs)
         next_obs = ptu.from_numpy(next_obs)
-        # TODO(student): update self.dynamics_models[i] using the given batch of data
+        # update self.dynamics_models[i] using the given batch of data
         # HINT: make sure to normalize the NN input (observations and actions)
         # *and* train it with normalized outputs (observation deltas) 
         # HINT 2: make sure to train it with observation *deltas*, not next_obs
         # directly
         # HINT 3: make sure to avoid any risk of dividing by zero when
         # normalizing vectors by adding a small number to the denominator!
-        loss = ...
-
+        target = (next_obs - obs - self.obs_delta_mean) / (self.obs_delta_std + 1e-8)
+        obs_acs = (torch.cat((obs, acs), dim=1) - self.obs_acs_mean) / (self.obs_acs_std + 1e-8)
+        prediction = self.dynamics_models[i](obs_acs)
+        loss = self.loss_fn(prediction, target)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
@@ -98,7 +100,7 @@ class ModelBasedAgent(nn.Module):
         return ptu.to_numpy(loss)
 
     @torch.no_grad()
-    def update_statistics(self, obs: np.ndarray, acs: np.ndarray, next_obs: np.ndarray):
+    def update_statistics(self, obs: np.ndarray, acs: np.ndarray, next_obs: np.ndarray) -> None:
         """
         Update the statistics used to normalize the inputs and outputs of the dynamics models.
 
@@ -110,11 +112,13 @@ class ModelBasedAgent(nn.Module):
         obs = ptu.from_numpy(obs)
         acs = ptu.from_numpy(acs)
         next_obs = ptu.from_numpy(next_obs)
-        # TODO(student): update the statistics
-        self.obs_acs_mean = ...
-        self.obs_acs_std = ...
-        self.obs_delta_mean = ...
-        self.obs_delta_std = ...
+        # update the statistics
+        obs_acs = torch.cat((obs, acs), dim=1)
+        self.obs_acs_mean = torch.mean(obs_acs, dim=0, keepdim=True)  # shape=(1, obs_dim + ac_dim)
+        self.obs_acs_std = torch.std(obs_acs, dim=0, keepdim=True)
+        delta = next_obs - obs
+        self.obs_delta_mean = torch.mean(delta, dim=0, keepdim=True)
+        self.obs_delta_std = torch.std(delta, dim=0, keepdim=True)
 
     @torch.no_grad()
     def get_dynamics_predictions(
@@ -125,17 +129,22 @@ class ModelBasedAgent(nn.Module):
         predicted next observations from self.dynamics_models[i].
 
         Args:
+            i: index of the dynamics model to get predictions
             obs: (batch_size, ob_dim)
             acs: (batch_size, ac_dim)
         Returns: (batch_size, ob_dim)
         """
         obs = ptu.from_numpy(obs)
         acs = ptu.from_numpy(acs)
-        # TODO(student): get the model's predicted `next_obs`
+        # get the model's predicted `next_obs`
         # HINT: make sure to *unnormalize* the NN outputs (observation deltas)
         # Same hints as `update` above, avoid nasty divide-by-zero errors when
         # normalizing inputs!
-        return ptu.to_numpy(pred_next_obs)
+        obs_acs = (torch.cat((obs, acs), dim=1) - self.obs_acs_mean) / (self.obs_acs_std + 1e-8)
+        delta = self.dynamics_models[i](obs_acs)
+        delta *= self.obs_delta_std
+        delta += self.obs_delta_mean
+        return ptu.to_numpy(obs + delta)
 
     def evaluate_action_sequences(self, obs: np.ndarray, action_sequences: np.ndarray):
         """
@@ -159,8 +168,8 @@ class ModelBasedAgent(nn.Module):
         # We need to repeat our starting obs for each of the rollouts.
         obs = np.tile(obs, (self.ensemble_size, self.mpc_num_action_sequences, 1))
 
-        # TODO(student): for each batch of actions in in the horizon...
-        for acs in ...:
+        # for each batch of actions in the horizon...
+        for acs in action_sequences.transpose(1, 0, 2):
             assert acs.shape == (self.mpc_num_action_sequences, self.ac_dim)
             assert obs.shape == (
                 self.ensemble_size,
@@ -168,22 +177,25 @@ class ModelBasedAgent(nn.Module):
                 self.ob_dim,
             )
 
-            # TODO(student): predict the next_obs for each rollout
+            # predict the next_obs for each rollout
             # HINT: use self.get_dynamics_predictions
-            next_obs = ...
+            next_obs = np.stack([self.get_dynamics_predictions(i, obs[i], acs)
+                                 for i in range(self.ensemble_size)])
             assert next_obs.shape == (
                 self.ensemble_size,
                 self.mpc_num_action_sequences,
                 self.ob_dim,
             )
 
-            # TODO(student): get the reward for the current step in each rollout
+            # get the reward for the current step in each rollout
             # HINT: use `self.env.get_reward`. `get_reward` takes 2 arguments:
             # `next_obs` and `acs` with shape (n, ob_dim) and (n, ac_dim),
             # respectively, and returns a tuple of `(rewards, dones)`. You can 
             # ignore `dones`. You might want to do some reshaping to make
             # `next_obs` and `acs` 2-dimensional.
-            rewards = ...
+            acs = np.tile(acs, (self.ensemble_size, 1)).reshape(-1, self.ac_dim)
+            rewards = self.env.get_reward(next_obs.reshape(-1, self.ob_dim), acs)[0].squeeze()
+            rewards = rewards.reshape(self.ensemble_size, -1)
             assert rewards.shape == (self.ensemble_size, self.mpc_num_action_sequences)
 
             sum_of_rewards += rewards
@@ -193,12 +205,14 @@ class ModelBasedAgent(nn.Module):
         # now we average over the ensemble dimension
         return sum_of_rewards.mean(axis=0)
 
-    def get_action(self, obs: np.ndarray):
+    def get_action(self, obs: np.ndarray) -> np.ndarray:
         """
-        Choose the best action using model-predictive control.
+        Choose the first action of the action sequence with maximum reward using model-predictive control.
 
         Args:
             obs: (ob_dim,)
+        Returns:
+            act: (ac_dim,)
         """
         # always start with uniformly random actions
         action_sequences = np.random.uniform(
@@ -214,10 +228,29 @@ class ModelBasedAgent(nn.Module):
             best_index = np.argmax(rewards)
             return action_sequences[best_index][0]
         elif self.mpc_strategy == "cem":
-            elite_mean, elite_std = None, None
+            elite_mean, elite_var = None, None  # shape=(mpc_horizon, ac_dim)
             for i in range(self.cem_num_iters):
-                # TODO(student): implement the CEM algorithm
+                # implement the CEM algorithm
                 # HINT: you need a special case for i == 0 to initialize
                 # the elite mean and std
+                if i > 0:
+                    action_sequences = np.random.normal(
+                        elite_mean,
+                        np.sqrt(elite_var),
+                        size=(self.mpc_num_action_sequences, self.mpc_horizon, self.ac_dim),
+                    )
+
+                rewards = self.evaluate_action_sequences(obs, action_sequences)  # shape=(mpc_num_action_sequences,)
+                tops = np.argpartition(rewards, -self.cem_num_elites)[-self.cem_num_elites:]
+                elites = action_sequences[tops]  # shape=(cem_num_elites, mpc_horizon, ac_dim)
+                if i == 0:
+                    elite_mean = np.mean(elites, axis=0)
+                    elite_var = np.var(elites, axis=0)
+                else:
+                    elite_mean *= (1 - self.cem_alpha)
+                    elite_mean += self.cem_alpha * np.mean(elites, axis=0)
+                    elite_var *= (1 - self.cem_alpha)
+                    elite_var += self.cem_alpha * np.var(elites, axis=0)
+            return elite_mean[0]  # only the first action
         else:
             raise ValueError(f"Invalid MPC strategy '{self.mpc_strategy}'")
