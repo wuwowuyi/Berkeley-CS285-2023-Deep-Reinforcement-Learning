@@ -71,3 +71,11 @@ The performance of 500 candidate action sequences is significantly lower than th
 
 ![reacher ablation number of sequence](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw4/result_plots/reacher_cem.png)
 
+## Problem 6
+`python cs285/scripts/run_hw4.py -cfg experiments/mpc/halfcheetah_mbpo.yaml --sac_config_file experiments/sac/halfcheetah_clipq.yaml`
+
+* Red line is the full MBPO with a rollout length of 10
+* Pink line is the Dyna-like algorithm corresponds to a rollout length of 1
+* Blue line is the model-free SAC baseline corresponds to a rollout length of 0
+
+![mbpo](https://github.com/wuwowuyi/Berkeley-CS285-Deep-Reinforcement-Learning/blob/learning/hw4/result_plots/mbpo.png)
