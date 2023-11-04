@@ -45,11 +45,11 @@ def collect_mbpo_rollout(
         # Average the ensemble predictions directly to get the next observation.
         # Get the reward using `env.get_reward`.
 
-        ob = ob[None]  # add the batch dimension
-        ac = sac_agent.get_action(ptu.from_numpy(ob))[None]
-        next_obs = np.stack([mb_agent.get_dynamics_predictions(i, ob, ac)
+        ac = sac_agent.get_action(ob)[None]  # shape=(batch_size, ac_dim)
+        ob = ob[None]  # shape=(batch_size, obs_dim)
+        next_ob = np.stack([mb_agent.get_dynamics_predictions(i, ob, ac)
                              for i in range(mb_agent.ensemble_size)])  # shape=(ensemble_size, batch_size, obs_dim)
-        next_ob = np.mean(next_obs, axis=0)  # shape=(batch_size, obs_dim)
+        next_ob = np.mean(next_ob, axis=0)  # shape=(batch_size, obs_dim)
         rew = env.get_reward(next_ob, ac)[0]
 
         ob, ac, rew, next_ob = map(np.squeeze, (ob, ac, rew, next_ob))
@@ -226,6 +226,7 @@ def run_training_loop(
                     )
                 # train SAC
                 batch = sac_replay_buffer.sample(sac_config["batch_size"])
+                batch = ptu.from_numpy(batch)
                 sac_agent.update(
                     batch["observations"],
                     batch["actions"],

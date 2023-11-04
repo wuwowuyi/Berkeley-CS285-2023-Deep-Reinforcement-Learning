@@ -96,12 +96,12 @@ class SoftActorCritic(nn.Module):
 
         self.update_target_critic()
 
-    def get_action(self, observation: torch.Tensor) -> np.ndarray:
+    def get_action(self, observation: np.ndarray) -> np.ndarray:
         """
         Compute the action for a single given observation. not for batched observations.
         """
         with torch.no_grad():
-            #observation = ptu.from_numpy(observation)[None]
+            observation = ptu.from_numpy(observation)[None]
 
             action_distribution: torch.distributions.Distribution = self.actor(observation)
             action: torch.Tensor = action_distribution.sample()
