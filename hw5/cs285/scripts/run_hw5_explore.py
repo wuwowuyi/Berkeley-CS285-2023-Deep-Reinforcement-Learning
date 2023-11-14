@@ -1,6 +1,7 @@
 import time
 import argparse
 import pickle
+from pathlib import Path
 
 from cs285.agents import agents as agent_types
 from cs285.envs import Pointmass
@@ -72,14 +73,12 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
 
     ep_len = env.spec.max_episode_steps or env.max_episode_steps
 
-    observation = None
-
     # Replay buffer
-    replay_buffer = ReplayBuffer(capacity=config["total_steps"])
+    replay_buffer = ReplayBuffer(capacity=config["total_steps"])  # note the capacity choice
 
     observation = env.reset()
 
-    recent_observations = []
+    recent_observations = []  # for visualization
 
     for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
         if exploration_schedule is not None:
@@ -107,6 +106,15 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         if done:
             observation = env.reset()
 
+            """
+            See https://gymnasium.farama.org/api/experimental/wrappers/#gymnasium.experimental.wrappers.RecordEpisodeStatisticsV0
+            on what the episode dict in info contains:
+            "episode": {
+                "r": "<cumulative reward>",
+                "l": "<episode length>",
+                "t": "<elapsed time since beginning of episode>"
+            }
+            """
             logger.log_scalar(info["episode"]["r"], "train_return", step)
             logger.log_scalar(info["episode"]["l"], "train_ep_len", step)
         else:
@@ -179,6 +187,8 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     # Render final heatmap
     fig = visualize(env_pointmass, agent, replay_buffer.observations[:config["total_steps"]])
     fig.suptitle("State coverage")
+
+    Path("exploration_visualization").mkdir(parents=True, exist_ok=True)
     filename = os.path.join("exploration_visualization", f"{config['log_name']}.png")
     fig.savefig(filename)
     print("Saved final heatmap to", filename)
