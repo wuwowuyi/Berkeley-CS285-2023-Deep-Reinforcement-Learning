@@ -12,7 +12,11 @@ def init_network(model):
         model.weight.data.normal_()
         model.bias.data.normal_()
 
+
 class RNDAgent(DQNAgent):
+    """
+    Implement as a subclass of DQNAgent.
+    """
     def __init__(
         self,
         observation_shape: Tuple[int, ...],
@@ -45,8 +49,10 @@ class RNDAgent(DQNAgent):
         """
         Update the RND network using the observations.
         """
-        # TODO(student): update the RND network
-        loss = ...
+        # update the RND network
+        prediction = self.rnd_net(obs)
+        target = self.rnd_target_net(obs)
+        loss = torch.square(prediction - target).mean()
 
         self.rnd_optimizer.zero_grad()
         loss.backward()
@@ -64,10 +70,12 @@ class RNDAgent(DQNAgent):
         step: int,
     ):
         with torch.no_grad():
-            # TODO(student): Compute RND bonus for batch and modify rewards
-            rnd_error = ...
+            # Compute RND bonus for batch and modify rewards
+            prediction = self.rnd_net(observations)
+            target = self.rnd_target_net(observations)
+            rnd_error = torch.square(prediction - target).mean(dim=-1)
             assert rnd_error.shape == rewards.shape
-            rewards = ...
+            rewards = rewards + self.rnd_weight * rnd_error
 
         metrics = super().update(observations, actions, rewards, next_observations, dones, step)
 
