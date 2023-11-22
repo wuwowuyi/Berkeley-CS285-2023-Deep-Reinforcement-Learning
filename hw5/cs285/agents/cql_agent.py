@@ -30,7 +30,7 @@ class CQLAgent(DQNAgent):
         action: torch.Tensor,
         reward: torch.Tensor,
         next_obs: torch.Tensor,
-        done: bool,
+        done: torch.Tensor,
     ) -> Tuple[torch.Tensor, dict, dict]:
         loss, metrics, variables = super().compute_critic_loss(
             obs,
@@ -40,8 +40,10 @@ class CQLAgent(DQNAgent):
             done,
         )
 
-        # TODO(student): modify the loss to implement CQL
+        # modify the loss to implement CQL
         # Hint: `variables` includes qa_values and q_values from your CQL implementation
-        loss = loss + ...
+        q_values, qa_values = variables['q_values'], variables['qa_values']
+        penalty = torch.log(torch.exp(qa_values / self.cql_temperature).sum(dim=-1))
+        loss += self.cql_alpha * (penalty - q_values).mean()
 
         return loss, metrics, variables
