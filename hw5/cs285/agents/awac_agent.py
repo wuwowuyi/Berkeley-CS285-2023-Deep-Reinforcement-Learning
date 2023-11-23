@@ -2,7 +2,6 @@ from typing import Callable, Optional, Sequence, Tuple, List
 import torch
 from torch import nn
 
-
 from cs285.agents.dqn_agent import DQNAgent
 
 
@@ -31,22 +30,27 @@ class AWACAgent(DQNAgent):
         dones: torch.Tensor,
     ):
         with torch.no_grad():
-            # TODO(student): compute the actor distribution, then use it to compute E[Q(s, a)]
-            next_qa_values = ...
+            # compute the actor distribution, then use it to compute E[Q(s, a)]
+            # num_samples = 10  # 10 is arbitrary, to make an average.
+            dist = self.actor(next_observations)
+            # policy_actions = dist.sample((num_samples,))  # (num_samples, batch_size, act_dim)
+            policy_actions = dist.sample()
+            next_qa_values = self.target_critic(next_observations)
 
             # Use the actor to compute a critic backup
+            # next_qs = torch.gather(torch.tile(next_qa_values, (num_samples, 1)), -1, policy_actions)
+            # next_qs = next_qs.mean(dim=0).squeeze()
+            next_qs = torch.gather(next_qa_values, -1, torch.unsqueeze(policy_actions.long(), 1)).squeeze()
 
-            next_qs = ...
+            # Compute the TD target
+            target_values = rewards + self.discount * (1 - dones.int()) * next_qs
 
-            # TODO(student): Compute the TD target
-            target_values = ...
-
-        
-        # TODO(student): Compute Q(s, a) and loss similar to DQN
-        q_values = ...
+        # Compute Q(s, a) and loss similar to DQN
+        qa_values = self.critic(observations)
+        q_values = torch.gather(qa_values, -1, torch.unsqueeze(actions.long(), 1)).squeeze()
         assert q_values.shape == target_values.shape
 
-        loss = ...
+        loss = self.critic_loss(q_values, target_values)
 
         return (
             loss,
@@ -67,12 +71,22 @@ class AWACAgent(DQNAgent):
         actions: torch.Tensor,
         action_dist: Optional[torch.distributions.Categorical] = None,
     ):
-        # TODO(student): compute the advantage of the actions compared to E[Q(s, a)]
-        qa_values = ...
-        q_values = ...
-        values = ...
+        # compute the advantage of the actions compared to E[Q(s, a)]
+        with torch.no_grad():
+            qa_values = self.target_critic(observations)
 
-        advantages = ...
+        q_values = torch.gather(qa_values, -1, torch.unsqueeze(actions.long(), 1)).squeeze()
+
+        # num_samples = 10  # arbitrary number to make an average.
+        # policy_actions = action_dist.sample((num_samples,))  # shape=(num_samples, batch_size)
+        # qa_values = torch.tile(qa_values, (num_samples, 1, 1))  # shape=(num_samples, batch_size)
+        # values = torch.gather(qa_values, -1, torch.unsqueeze(policy_actions.long(), 1))
+        # values = values.mean(dim=0).squeeze()
+
+        policy_actions = action_dist.sample()
+        values = torch.gather(qa_values, -1, torch.unsqueeze(policy_actions.long(), 1)).squeeze()
+
+        advantages = q_values - values
         return advantages
 
     def update_actor(
@@ -80,16 +94,22 @@ class AWACAgent(DQNAgent):
         observations: torch.Tensor,
         actions: torch.Tensor,
     ):
-        # TODO(student): update the actor using AWAC
-        loss = ...
+        # update the actor using AWAC
+        dist = self.actor(observations)
+        adv = self.compute_advantage(observations, actions, dist)
+        logp = dist.log_prob(actions)
+        weight = torch.exp(torch.clip(adv / self.temperature, min=-5, max=5))
+        loss = -(logp * weight).mean()
 
         self.actor_optimizer.zero_grad()
         loss.backward()
+
         self.actor_optimizer.step()
 
         return loss.item()
 
-    def update(self, observations: torch.Tensor, actions: torch.Tensor, rewards: torch.Tensor, next_observations: torch.Tensor, dones: torch.Tensor, step: int):
+    def update(self, observations: torch.Tensor, actions: torch.Tensor, rewards: torch.Tensor,
+               next_observations: torch.Tensor, dones: torch.Tensor, step: int):
         metrics = super().update(observations, actions, rewards, next_observations, dones, step)
 
         # Update the actor.
