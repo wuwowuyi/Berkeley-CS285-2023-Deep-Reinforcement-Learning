@@ -6,6 +6,8 @@ from typing import Callable, List, Tuple
 
 from cs285.agents.dqn_agent import DQNAgent
 import cs285.infrastructure.pytorch_util as ptu
+from cs285.infrastructure.running_state import ZFilter
+
 
 def init_network(model):
     if isinstance(model, nn.Linear):
@@ -45,6 +47,8 @@ class RNDAgent(DQNAgent):
             self.rnd_net.parameters()
         )
 
+        self.rnd_normalizer = ZFilter((128, ))  # 128 is batch size.
+
     def update_rnd(self, obs: torch.Tensor):
         """
         Update the RND network using the observations.
@@ -74,7 +78,8 @@ class RNDAgent(DQNAgent):
             prediction = self.rnd_net(next_observations)
             target = self.rnd_target_net(next_observations)
             rnd_error = torch.square(prediction - target).mean(dim=-1)
-            rnd_error = (rnd_error - rnd_error.mean()) / (rnd_error.std() + 1e-8)
+            #rnd_error = (rnd_error - rnd_error.mean()) / (rnd_error.std() + 1e-8)
+            rnd_error = self.rnd_normalizer(rnd_error)
             assert rnd_error.shape == rewards.shape
             rewards = rewards + self.rnd_weight * rnd_error
 
