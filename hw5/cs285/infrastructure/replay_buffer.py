@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from cs285.infrastructure.utils import *
 
 
@@ -10,6 +12,50 @@ class ReplayBuffer:
         self.rewards = None
         self.next_observations = None
         self.dones = None
+
+    def _initialize(self,
+                    obs_shape, obs_dtype,
+                    act_shape, act_dtype,
+                    rwd_shape, rwd_dtype,
+                    next_obs_shape, next_obs_dtype,
+                    done_shape, done_dtype):
+        if self.size != 0:
+            raise RuntimeError("Cannot initialize a replay buffer that is not empty.")
+
+        self.observations = np.empty(
+            (self.max_size, *obs_shape), dtype=obs_dtype
+        )
+        self.actions = np.empty((self.max_size, *act_shape), dtype=act_dtype)
+        self.rewards = np.empty((self.max_size, *rwd_shape), dtype=rwd_dtype)
+        self.next_observations = np.empty(
+            (self.max_size, *next_obs_shape), dtype=next_obs_dtype
+        )
+        self.dones = np.empty((self.max_size, *done_shape), dtype=done_dtype)
+
+    def load(self, dumped: ReplayBuffer):
+        """Initialize from a dumped replay buffer"""
+
+        # For simplicity, we require the buffer is empty
+        # and big enough to hold all data from the dumped buffer.
+        data_size = dumped.size
+        if self.size != 0 or self.max_size < data_size:
+            raise ValueError('Replay buffer is not empty or big enough')
+
+        data = dumped.sample(1)
+        self._initialize(
+            data['observations'][0].shape, data['observations'][0].dtype,
+            data['actions'][0].shape, data['actions'][0].dtype,
+            data['rewards'][0].shape, data['rewards'][0].dtype,
+            data['next_observations'][0].shape, data['next_observations'][0].dtype,
+            data['dones'][0].shape, data['dones'][0].dtype
+        )
+
+        self.observations[:data_size] = dumped.observations
+        self.actions[:data_size] = dumped.actions
+        self.rewards[:data_size] = dumped.rewards
+        self.next_observations[:data_size] = dumped.next_observations
+        self.dones[:data_size] = dumped.dones
+        self.size = data_size
 
     def sample(self, batch_size):
         rand_indices = np.random.randint(0, self.size, size=(batch_size,)) % self.max_size
@@ -53,15 +99,13 @@ class ReplayBuffer:
             action = np.array(action, dtype=np.int64)
 
         if self.observations is None:
-            self.observations = np.empty(
-                (self.max_size, *observation.shape), dtype=observation.dtype
+            self._initialize(
+                observation.shape, observation.dtype,
+                action.shape, action.dtype,
+                reward.shape, reward.dtype,
+                next_observation.shape, next_observation.dtype,
+                done.shape, done.dtype
             )
-            self.actions = np.empty((self.max_size, *action.shape), dtype=action.dtype)
-            self.rewards = np.empty((self.max_size, *reward.shape), dtype=reward.dtype)
-            self.next_observations = np.empty(
-                (self.max_size, *next_observation.shape), dtype=next_observation.dtype
-            )
-            self.dones = np.empty((self.max_size, *done.shape), dtype=done.dtype)
 
         assert observation.shape == self.observations.shape[1:]
         assert action.shape == self.actions.shape[1:]
