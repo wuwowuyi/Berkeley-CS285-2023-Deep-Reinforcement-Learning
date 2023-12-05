@@ -46,4 +46,5 @@ class CQLAgent(DQNAgent):
         penalty = torch.log(torch.exp(qa_values / self.cql_temperature).sum(dim=-1))
         loss += self.cql_alpha * (penalty - q_values).mean()
 
+        metrics['critic_loss'] = loss.item()  # update log item
         return loss, metrics, variables
