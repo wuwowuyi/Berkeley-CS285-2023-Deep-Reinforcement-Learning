@@ -1,13 +1,13 @@
 import torch
-
+from cs285.infrastructure import pytorch_util as ptu
 
 # from https://github.com/joschu/modular_rl
 # http://www.johndcook.com/blog/standard_deviation/
 class RunningStat(object):
     def __init__(self, shape):
         self._n = 0
-        self._M = torch.zeros(*shape)  # running mean
-        self._S = torch.zeros(*shape)  # running std * (self._n - 1) when self._n > 1
+        self._M = torch.zeros(*shape).to(ptu.device)  # running mean
+        self._S = torch.zeros(*shape).to(ptu.device)  # running std * (self._n - 1) when self._n > 1
 
     def push(self, x: torch.Tensor):
         x = x.detach()
