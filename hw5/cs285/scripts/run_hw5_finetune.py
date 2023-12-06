@@ -145,7 +145,8 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         env_pointmass, agent, replay_buffer.observations[: config["total_steps"]]
     )
     fig.suptitle("State coverage")
-    filename = os.path.join("exploration_visualization", f"{config['log_name']}.png")
+    filename = os.path.join("exploration_visualization",
+                            f"{config['log_name']}-{time.strftime('%Y%m%d-%H%M%S', time.localtime())}.png")
     fig.savefig(filename)
     print("Saved final heatmap to", filename)
 

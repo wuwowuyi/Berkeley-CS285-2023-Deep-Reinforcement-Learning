@@ -1,4 +1,7 @@
 class Schedule(object):
+    def __str__(self):
+        return type(self).__name__
+
     def value(self, t):
         """Value of the schedule at time t"""
         raise NotImplementedError()
@@ -13,6 +16,9 @@ class ConstantSchedule(object):
             Constant value of the schedule
         """
         self._v = value
+
+    def __str__(self):
+        return f'{super().__str__()}, {self._v}'
 
     def value(self, t):
         """See Schedule.value"""
@@ -47,6 +53,9 @@ class PiecewiseSchedule(object):
         self._interpolation = interpolation
         self._outside_value = outside_value
         self._endpoints      = endpoints
+
+    def __str__(self):
+        return f"{super().__str__()}, endpoints {self._endpoints}, outside value {self._outside_value}"
 
     def value(self, t):
         """See Schedule.value"""
