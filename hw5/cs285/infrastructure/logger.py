@@ -1,4 +1,7 @@
+from typing import Optional
+
 import os
+
 from tensorboardX import SummaryWriter
 import numpy as np
 
@@ -61,6 +64,9 @@ class Logger:
         """figure: matplotlib.pyplot figure handle"""
         im = plot_graph(array)
         self._summ_writer.add_image('{}_{}'.format(name, phase), im, step)
+
+    def log_text(self, tag, text_str, global_step: Optional[int] = None):
+        self._summ_writer.add_text(tag, text_str, global_step)
 
     def dump_scalars(self, log_path=None):
         log_path = os.path.join(self._log_dir, "scalar_data.json") if log_path is None else log_path
