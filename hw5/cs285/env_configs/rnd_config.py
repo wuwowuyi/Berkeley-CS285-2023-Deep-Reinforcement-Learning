@@ -15,11 +15,12 @@ def rnd_config(
 ):
     config = basic_dqn_config(total_steps=total_steps, discount=discount, **kwargs)
     config["agent_kwargs"]["rnd_weight"] = rnd_weight
-    config["log_name"] = "{env_name}_rnd{rnd_weight}".format(
-        env_name=config["env_name"], rnd_weight=rnd_weight
+    config["log_name"] = "{env_name}_rnd{rnd_weight}_{total_steps}".format(
+        env_name=config["env_name"], rnd_weight=rnd_weight, total_steps=total_steps
     )
     config["agent"] = "rnd"
 
+    # Output rnd_network do not have an interpretable meaning.
     config["agent_kwargs"]["make_rnd_network"] = lambda obs_shape: ptu.build_mlp(
         input_size=obs_shape[0],
         output_size=rnd_dim,
