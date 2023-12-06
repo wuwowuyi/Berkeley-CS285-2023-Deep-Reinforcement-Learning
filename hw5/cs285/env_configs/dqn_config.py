@@ -75,5 +75,6 @@ def basic_dqn_config(
         "batch_size": batch_size,
         "env_name": env_name,
         "agent": "dqn",
+        "learning_rate": learning_rate,  # for logging
         **kwargs,
     }
