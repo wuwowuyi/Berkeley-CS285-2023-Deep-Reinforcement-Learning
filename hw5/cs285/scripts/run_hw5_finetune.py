@@ -86,7 +86,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         update_info = agent.update(
             batch["observations"],
             batch["actions"],
-            batch["rewards"] * (1 if config.get("use_reward", False) else 0),
+            batch["rewards"],
             batch["next_observations"],
             batch["dones"],
             step,
@@ -161,8 +161,7 @@ The results will be stored in {dataset_dir}.
 """
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def add_arguments(parser):
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
 
     parser.add_argument("--eval_interval", "-ei", type=int, default=10000)
@@ -177,6 +176,10 @@ def main():
     parser.add_argument("--use_reward", action="store_true")
     parser.add_argument("--dataset_dir", type=str, required=True)
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    add_arguments(parser)
     args = parser.parse_args()
 
     # create directory for logging
