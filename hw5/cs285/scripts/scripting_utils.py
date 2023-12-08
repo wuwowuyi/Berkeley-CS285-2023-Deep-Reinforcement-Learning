@@ -1,3 +1,5 @@
+from inspect import isfunction
+
 import yaml
 import os
 import time
@@ -5,16 +7,21 @@ import time
 import cs285.env_configs
 from cs285.infrastructure.logger import Logger
 
-def make_config(config_file: str) -> dict:
+
+def make_config(config_file: str, params: dict = None) -> dict:
     config_kwargs = {}
     with open(config_file, "r") as f:
         config_kwargs = yaml.load(f, Loader=yaml.SafeLoader)
 
+    if params:
+        config_kwargs.update(params)  # override parameters from config yaml file
+
     base_config_name = config_kwargs.pop("base_config")
     return cs285.env_configs.configs[base_config_name](**config_kwargs)
 
-def make_logger(logdir_prefix: str, config: dict) -> Logger:
-    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../data")
+
+def make_logger(logdir_prefix: str, config: dict, data_path: str = '') -> Logger:
+    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), f"../../data/{data_path}")
 
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
@@ -27,3 +34,14 @@ def make_logger(logdir_prefix: str, config: dict) -> Logger:
         os.makedirs(logdir)
 
     return Logger(logdir)
+
+
+def update_dict(output_dict: dict, input_dict: dict) -> None:
+    for k, v in input_dict.items():
+        if isfunction(v):
+            continue
+        elif isinstance(v, dict):
+            update_dict(output_dict, v)
+        else:
+            output_dict[k] = str(v)
+

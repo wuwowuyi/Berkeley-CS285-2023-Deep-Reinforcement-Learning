@@ -102,8 +102,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
             )
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def add_arguments(parser: argparse.ArgumentParser):
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
 
     parser.add_argument("--eval_interval", "-ei", type=int, default=10000)
@@ -117,6 +116,10 @@ def main():
 
     parser.add_argument("--dataset_dir", type=str, required=True)
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    add_arguments(parser)
     args = parser.parse_args()
 
     # create directory for logging

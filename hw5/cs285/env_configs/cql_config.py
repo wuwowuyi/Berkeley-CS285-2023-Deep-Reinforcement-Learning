@@ -13,7 +13,7 @@ import cs285.infrastructure.pytorch_util as ptu
 def cql_config(
     cql_alpha: float = 1.0,
     cql_temperature: float = 1.0,
-    total_steps: int = 50000,
+    total_steps: int = 50000,  # only finetune use total_steps
     discount: float = 0.95,
     **kwargs,
 ):
