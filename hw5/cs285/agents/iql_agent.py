@@ -118,11 +118,12 @@ class IQLAgent(AWACAgent):
         )
         self.value_critic_optimizer.step()
 
+
         return {
             "v_loss": loss.item(),
             "vs_adv": (vs - target_values).mean().item(),
             "vs": vs.mean().item(),
-            "target_values": target_values.mean().item(),
+            "v_target_values": target_values.mean().item(),
             "v_grad_norm": grad_norm.item(),
         }
 
