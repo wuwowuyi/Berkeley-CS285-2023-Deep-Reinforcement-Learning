@@ -1,73 +1,40 @@
-## Setup
+## Behavioral Cloning
 
-You can run this code on your own machine or on Google Colab. 
+| env            | return mean vs expert mean | return std vs expert std | eval_batch_size |
+|----------------|----------------------------|--------------------------|-----------------|
+| ant-v4         | 4640  vs. 4682             | 118.60 vs. 30.71         | 5000            |
+| halfcheetah-v4 | 3957  vs. 4035             | 65.75  vs. 32.87         | 5000            |
+| hoppper-v4     | 1060  vs. 3718             | 75.49  vs. 0.35          | 2000            |
+| walker2d-v4    | 244.7 vs. 5383             | 301.5  vs. 54.15         | 2000            |
 
-1. **Local option:** If you choose to run locally, you will need to install MuJoCo and some Python packages; see [installation.md](installation.md) for instructions.
-2. **Colab:** The first few sections of the notebook will install all required dependencies. You can try out the Colab option by clicking the badge below:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/berkeleydeeprlcourse/homework_fall2023/blob/master/hw1/cs285/scripts/run_hw1.ipynb)
+## DAgger
 
-## Complete the code
+10 iterations. 
+eval_batch_size 5000.
 
-Fill in sections marked with `TODO`. In particular, edit
- - [policies/MLP_policy.py](cs285/policies/MLP_policy.py)
- - [infrastructure/utils.py](cs285/infrastructure/utils.py)
- - [scripts/run_hw1.py](cs285/scripts/run_hw1.py)
+### ant-v4 return mean and std
 
-You have the option of running locally or on Colab using
- - [scripts/run_hw1.py](cs285/scripts/run_hw1.py) (if running locally) or [scripts/run_hw1.ipynb](cs285/scripts/run_hw1.ipynb) (if running on Colab)
+![ant mean return](/result_plots/ant_average_return.png)
 
-See the homework pdf for more details.
+![ant std return](/result_plots/ant_return_std.png)
 
-## Run the code
 
-Tip: While debugging, you probably want to keep the flag `--video_log_freq -1` which will disable video logging and speed up the experiment. However, feel free to remove it to save videos of your awesome policy!
+### HalfCheetah return mean and std
 
-If running on Colab, adjust the `#@params` in the `Args` class according to the commmand line arguments above.
+![halfcheetah mean return](/result_plots/halfcheetah_average_return.png)
 
-### Section 1 (Behavior Cloning)
-Command for problem 1:
+![halfcheetah std return](/result_plots/halfcheetah_return_std.png)
 
-```
-python cs285/scripts/run_hw1.py \
-	--expert_policy_file cs285/policies/experts/Ant.pkl \
-	--env_name Ant-v4 --exp_name bc_ant --n_iter 1 \
-	--expert_data cs285/expert_data/expert_data_Ant-v4.pkl \
-	--video_log_freq -1
-```
+### Hopper-v4 return mean and std
 
-Make sure to also try another environment.
-See the homework PDF for more details on what else you need to run.
-To generate videos of the policy, remove the `--video_log_freq -1` flag.
+![hopper mean return](/result_plots/hopper_average_return.png)
 
-### Section 2 (DAgger)
-Command for section 1:
-(Note the `--do_dagger` flag, and the higher value for `n_iter`)
+![hopper std return](/result_plots/hopper_return_std.png)
 
-```
-python cs285/scripts/run_hw1.py \
-    --expert_policy_file cs285/policies/experts/Ant.pkl \
-    --env_name Ant-v4 --exp_name dagger_ant --n_iter 10 \
-    --do_dagger --expert_data cs285/expert_data/expert_data_Ant-v4.pkl \
-	--video_log_freq -1
-```
+### Walker-4 return mean and std
 
-Make sure to also try another environment.
-See the homework PDF for more details on what else you need to run.
+![walker mean return](/result_plots/walker_average_return.png)
 
-## Visualization the saved tensorboard event file:
-
-You can visualize your runs using tensorboard:
-```
-tensorboard --logdir data
-```
-
-You will see scalar summaries as well as videos of your trained policies (in the 'images' tab).
-
-You can choose to visualize specific runs with a comma-separated list:
-```
-tensorboard --logdir data/run1,data/run2,data/run3...
-```
-
-If running on Colab, you will be using the `%tensorboard` [line magic](https://ipython.readthedocs.io/en/stable/interactive/magics.html) to do the same thing; see the [notebook](cs285/scripts/run_hw1.ipynb) for more details.
+![walker std return](/result_plots/walker_return_std.png)
 
