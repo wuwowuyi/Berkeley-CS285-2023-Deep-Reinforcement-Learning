@@ -15,26 +15,26 @@ eval_batch_size 5000.
 
 ### ant-v4 return mean and std
 
-![ant mean return](/result_plots/ant_average_return.png)
+![ant mean return](result_plots/ant_average_return.png)
 
-![ant std return](/result_plots/ant_return_std.png)
+![ant std return](result_plots/ant_return_std.png)
 
 
 ### HalfCheetah return mean and std
 
-![halfcheetah mean return](/result_plots/halfcheetah_average_return.png)
+![halfcheetah mean return](result_plots/halfcheetah_average_return.png)
 
-![halfcheetah std return](/result_plots/halfcheetah_return_std.png)
+![halfcheetah std return](result_plots/halfcheetah_return_std.png)
 
 ### Hopper-v4 return mean and std
 
-![hopper mean return](/result_plots/hopper_average_return.png)
+![hopper mean return](result_plots/hopper_average_return.png)
 
-![hopper std return](/result_plots/hopper_return_std.png)
+![hopper std return](result_plots/hopper_return_std.png)
 
 ### Walker-4 return mean and std
 
-![walker mean return](/result_plots/walker_average_return.png)
+![walker mean return](result_plots/walker_average_return.png)
 
-![walker std return](/result_plots/walker_return_std.png)
+![walker std return](result_plots/walker_return_std.png)
 
