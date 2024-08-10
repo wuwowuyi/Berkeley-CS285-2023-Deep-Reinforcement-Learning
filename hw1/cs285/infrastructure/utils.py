@@ -17,7 +17,7 @@ def sample_trajectory(env, policy, max_path_length, render=False):
     """Sample a rollout in the environment from a policy."""
     
     # initialize env for the beginning of a new rollout
-    ob =  env.reset() # TODO: initial observation after resetting the env
+    ob = env.reset()  # TODO: initial observation after resetting the env
 
     # init vars
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
@@ -33,15 +33,14 @@ def sample_trajectory(env, policy, max_path_length, render=False):
             image_obs.append(cv2.resize(img, dsize=(250, 250), interpolation=cv2.INTER_CUBIC))
     
         # TODO use the most recent ob to decide what to do
-        ac = TODO # HINT: this is a numpy array
-        ac = ac[0]
+        ac = policy.get_action(ob)  # HINT: this is a numpy array
 
         # TODO: take that action and get reward and next ob
-        next_ob, rew, done, _ = TODO
+        next_ob, rew, done, _ = env.step(ac)
         
         # TODO rollout can end due to done, or due to max_path_length
         steps += 1
-        rollout_done = TODO # HINT: this is either 0 or 1
+        rollout_done = done or (steps >= max_path_length)  # HINT: this is either 0 or 1
         
         # record result of taking that action
         obs.append(ob)
@@ -130,17 +129,17 @@ def compute_metrics(paths, eval_paths):
 
     # decide what to log
     logs = OrderedDict()
-    logs["Eval_AverageReturn"] = np.mean(eval_returns)
-    logs["Eval_StdReturn"] = np.std(eval_returns)
-    logs["Eval_MaxReturn"] = np.max(eval_returns)
-    logs["Eval_MinReturn"] = np.min(eval_returns)
-    logs["Eval_AverageEpLen"] = np.mean(eval_ep_lens)
+    logs["AverageReturn/Eval"] = np.mean(eval_returns)
+    logs["StdReturn/Eval"] = np.std(eval_returns)
+    logs["MaxReturn/Eval"] = np.max(eval_returns)
+    logs["MinReturn/Eval"] = np.min(eval_returns)
+    logs["AverageEpLen/Eval"] = np.mean(eval_ep_lens)
 
-    logs["Train_AverageReturn"] = np.mean(train_returns)
-    logs["Train_StdReturn"] = np.std(train_returns)
-    logs["Train_MaxReturn"] = np.max(train_returns)
-    logs["Train_MinReturn"] = np.min(train_returns)
-    logs["Train_AverageEpLen"] = np.mean(train_ep_lens)
+    logs["AverageReturn/Train"] = np.mean(train_returns)
+    logs["StdReturn/Train"] = np.std(train_returns)
+    logs["MaxReturn/Train"] = np.max(train_returns)
+    logs["MinReturn/Train"] = np.min(train_returns)
+    logs["AverageEpLen/Train"] = np.mean(train_ep_lens)
 
     return logs
 

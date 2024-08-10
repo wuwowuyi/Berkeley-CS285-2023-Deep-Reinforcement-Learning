@@ -10,6 +10,7 @@ import abc
 import itertools
 from typing import Any
 from torch import nn
+from torch.distributions import Normal
 from torch.nn import functional as F
 from torch import optim
 
@@ -101,7 +102,6 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         )
         self.mean_net.to(ptu.device)
         self.logstd = nn.Parameter(
-
             torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
         )
         self.logstd.to(ptu.device)
@@ -129,9 +129,16 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         # through it. For example, you can return a torch.FloatTensor. You can also
         # return more flexible objects, such as a
         # `torch.distributions.Distribution` object. It's up to you!
-        raise NotImplementedError
+        mean = self.mean_net(observation)
+        return Normal(mean, torch.exp(self.logstd))
 
-    def update(self, observations, actions):
+    @torch.no_grad()
+    def get_action(self, observation: np.ndarray) -> np.ndarray:
+        dist = self(ptu.from_numpy(observation))
+        ac = dist.sample()
+        return ptu.to_numpy(ac)
+
+    def update(self, observations: np.ndarray, actions: np.ndarray) -> dict:
         """
         Updates/trains the policy
 
@@ -141,8 +148,16 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             dict: 'Training Loss': supervised learning loss
         """
         # TODO: update the policy and return the loss
-        loss = TODO
+        obs, ac = ptu.from_numpy(observations), ptu.from_numpy(actions)
+        self.optimizer.zero_grad()
+        dist = self(obs)
+        logp = dist.log_prob(ac)
+        if logp.dim() > 1:
+            logp = logp.sum(-1)
+        loss = -logp.sum()
+        loss.backward()
+        self.optimizer.step()
         return {
             # You can add extra logging information here, but keep this line
-            'Training Loss': ptu.to_numpy(loss),
+            'Training Loss': ptu.to_numpy(loss).item(),
         }

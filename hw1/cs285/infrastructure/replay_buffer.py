@@ -18,7 +18,7 @@ class ReplayBuffer(object):
         self.terminals = None
 
     def __len__(self):
-        if self.obs:
+        if self.obs is not None:
             return self.obs.shape[0]
         else:
             return 0
@@ -60,3 +60,7 @@ class ReplayBuffer(object):
                 [self.terminals, terminals]
             )[-self.max_size:]
 
+    def sample(self, batch_size):
+        """Sample given batch size of observations and actions. """
+        indices = np.random.randint(0, len(self), size=(batch_size,))
+        return self.obs[indices], self.acs[indices]
