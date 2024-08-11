@@ -152,8 +152,6 @@ class MLPPolicySL(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         self.optimizer.zero_grad()
         dist = self(obs)
         logp = dist.log_prob(ac)
-        if logp.dim() > 1:
-            logp = logp.sum(-1)
         loss = -logp.sum()
         loss.backward()
         self.optimizer.step()
