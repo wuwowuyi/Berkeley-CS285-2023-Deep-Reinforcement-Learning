@@ -41,7 +41,7 @@ class ValueCritic(nn.Module):
     def update(self, obs: torch.Tensor, q_values: torch.Tensor) -> dict:
         # update the critic using the observations and q_values
         self.optimizer.zero_grad()
-        loss = (torch.square(self(obs) - q_values)).mean()
+        loss = torch.square(self(obs) - q_values).mean()
         loss.backward()
         self.optimizer.step()
 

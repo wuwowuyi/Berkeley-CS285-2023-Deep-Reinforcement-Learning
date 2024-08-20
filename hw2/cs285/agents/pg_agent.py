@@ -97,12 +97,12 @@ class PGAgent(nn.Module):
             # trajectory at each point.
             # In other words: Q(s_t, a_t) = sum_{t'=0}^T gamma^t' r_{t'}
             # use the helper function self._discounted_return to calculate the Q-values
-            q_values = [np.array(self._discounted_return(list(rs)), dtype=np.float32) for rs in rewards]
+            q_values = [np.array(self._discounted_return(rs), dtype=np.float32) for rs in rewards]
         else:
             # Case 2: in reward-to-go PG, we only use the rewards after timestep t to estimate the Q-value for (s_t, a_t).
             # In other words: Q(s_t, a_t) = sum_{t'=t}^T gamma^(t'-t) * r_{t'}
             # use the helper function self._discounted_reward_to_go to calculate the Q-values
-            q_values = [np.array(self._discounted_reward_to_go(list(rs)), dtype=np.float32) for rs in rewards]
+            q_values = [np.array(self._discounted_reward_to_go(rs), dtype=np.float32) for rs in rewards]
 
         return q_values
 
@@ -137,7 +137,7 @@ class PGAgent(nn.Module):
                 # HINT: append a dummy T+1 value for simpler recursive calculation
                 values = np.append(values, [0])
                 advantages = np.zeros(batch_size + 1)
-                td_error = rewards + (1 - terminals) * self.gamma * values[1:] - values[:1]
+                td_error = rewards + (1 - terminals) * self.gamma * values[1:] - values[:-1]
 
                 for i in reversed(range(batch_size)):
                     # recursively compute advantage estimates starting from timestep T.

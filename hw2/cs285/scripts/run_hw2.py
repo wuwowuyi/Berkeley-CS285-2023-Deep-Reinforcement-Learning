@@ -30,6 +30,7 @@ def run_training_loop(args):
 
     # make the gym environment
     env = gym.make(args.env_name, render_mode=None)
+    env.reset(seed=args.seed)
     discrete = isinstance(env.action_space, gym.spaces.Discrete)
 
     # add action noise, if needed
@@ -83,17 +84,9 @@ def run_training_loop(args):
     start_time = time.time()
     for itr in range(args.n_iter):
         print(f"\n********** Iteration {itr} ************")
-        trajs = []
-        epoch_steps = 0
         # sample `args.batch_size` transitions using utils.sample_trajectories
-        while epoch_steps < args.batch_size:
-            # make sure to use `max_ep_len`
-            remaining_steps = args.batch_size - epoch_steps
-            traj = utils.sample_trajectory(env, agent.actor, min(remaining_steps, max_ep_len))
-            trajs.append(traj)
-            traj_step = len(traj['observation'])
-            total_envsteps += traj_step
-            epoch_steps += traj_step
+        trajs, envsteps_this_batch = utils.sample_trajectories(env, agent.actor, args.batch_size, max_ep_len)
+        total_envsteps += envsteps_this_batch
 
         # trajs should be a list of dictionaries of NumPy arrays, where each dictionary corresponds to a trajectory.
         # this line converts this into a single dictionary of lists of NumPy arrays.
