@@ -32,6 +32,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
 
     # make the gym environment
     env = config["make_env"]()
+    #env.reset(seed=args.seed)
     eval_env = config["make_env"]()
     render_env = config["make_env"](render=True)
 

@@ -45,7 +45,7 @@ class MLPPolicy(nn.Module):
                 assert fixed_std is None
                 self.net = ptu.build_mlp(
                     input_size=ob_dim,
-                    output_size=2*ac_dim,  # mean and std of diagonal Gaussian
+                    output_size=2*ac_dim,  # mean and std of a diagonal Gaussian
                     n_layers=n_layers,
                     size=layer_size,
                 ).to(ptu.device)
@@ -76,19 +76,19 @@ class MLPPolicy(nn.Module):
             action_distribution = distributions.Categorical(logits=logits)
         else:
             if self.state_dependent_std:
-                mean, std = torch.chunk(self.net(obs), 2, dim=-1)
-                std = torch.nn.functional.softplus(std) + 1e-2
+                mean, std = torch.chunk(self.net(obs), 2, dim=1)
+                std = torch.nn.functional.softplus(std) + 1e-2  # add 1e-2 to make sure std not too small. same below
             else:
                 mean = self.net(obs)
                 if self.fixed_std:
                     std = self.std
                 else:
-                    std = torch.nn.functional.softplus(self.std) + 1e-2  # to make sure std is positive?
+                    std = torch.nn.functional.softplus(self.std) + 1e-2
 
             if self.use_tanh:  # bounded action
                 action_distribution = make_tanh_transformed(mean, std)
             else:
-                return make_multi_normal(mean, std)
+                action_distribution = make_multi_normal(mean, std)
 
         return action_distribution
  

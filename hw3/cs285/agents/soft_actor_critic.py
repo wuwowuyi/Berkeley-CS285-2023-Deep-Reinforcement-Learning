@@ -99,6 +99,7 @@ class SoftActorCritic(nn.Module):
     def get_action(self, observation: torch.Tensor) -> np.ndarray:
         """
         Compute the action for a single given observation. not for batched observations.
+        A batch dimension is needed here to be consistent with batched training.
         """
         with torch.no_grad():
             #observation = ptu.from_numpy(observation)[None]
@@ -234,10 +235,11 @@ class SoftActorCritic(nn.Module):
         """
         # Compute the entropy of the action distribution.
         # Note: Think about whether to use .rsample() or .sample() here...
-        num_samples = 10  # arbitrary number. 10 should be Ok since batch makes an average too.
-        sampled_act = action_distribution.rsample((num_samples, ))  # shape=(num_samples, batch_size, act_dim)
-        logp = action_distribution.log_prob(sampled_act)  # shape=(num_samples, batch_size)
-        return torch.mean(-logp, dim=0)  # return's shape=(batch_size,)
+        # num_samples = 10  # arbitrary number. 10 should be Ok since batch makes an average too.
+        # sampled_act = action_distribution.rsample((num_samples, ))  # shape=(num_samples, batch_size, act_dim)
+        # logp = action_distribution.log_prob(sampled_act)  # shape=(num_samples, batch_size)
+        # return torch.mean(-logp, dim=0)  # return's shape=(batch_size,)
+        return action_distribution.entropy()
 
     def actor_loss_reinforce(self, obs: torch.Tensor):
         batch_size = obs.shape[0]
@@ -353,7 +355,7 @@ class SoftActorCritic(nn.Module):
 
         # Average the critic info over all of the steps
         critic_info = {
-            k: np.mean([info[k] for info in critic_infos]) for k in critic_infos[0]
+            key: np.mean([info[key] for info in critic_infos]) for key in critic_infos[0]
         }
 
         # Deal with LR scheduling
