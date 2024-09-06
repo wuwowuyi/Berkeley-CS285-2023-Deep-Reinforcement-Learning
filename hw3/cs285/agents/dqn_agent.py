@@ -53,7 +53,7 @@ class DQNAgent(nn.Module):
         probs[torch.arange(n), max_action] = 1 - epsilon
         dist = distributions.Categorical(probs=probs)
         action = dist.sample()
-        return ptu.to_numpy(action).squeeze(0).item()
+        return ptu.to_numpy(action).squeeze(0)
 
     def update_critic(
         self,
