@@ -99,7 +99,6 @@ class ModelBasedAgent(nn.Module):
 
         return ptu.to_numpy(loss)
 
-    @torch.no_grad()
     def update_statistics(self, obs: np.ndarray, acs: np.ndarray, next_obs: np.ndarray) -> None:
         """
         Update the statistics used to normalize the inputs and outputs of the dynamics models.
@@ -167,25 +166,21 @@ class ModelBasedAgent(nn.Module):
         )
         # We need to repeat our starting obs for each of the rollouts.
         obs = np.tile(obs, (self.ensemble_size, self.mpc_num_action_sequences, 1))
+        assert obs.shape == (
+            self.ensemble_size,
+            self.mpc_num_action_sequences,
+            self.ob_dim,
+        )
 
         # for each batch of actions in the horizon...
         for acs in action_sequences.transpose(1, 0, 2):
             assert acs.shape == (self.mpc_num_action_sequences, self.ac_dim)
-            assert obs.shape == (
-                self.ensemble_size,
-                self.mpc_num_action_sequences,
-                self.ob_dim,
-            )
 
             # predict the next_obs for each rollout
             # HINT: use self.get_dynamics_predictions
             next_obs = np.stack([self.get_dynamics_predictions(i, obs[i], acs)
                                  for i in range(self.ensemble_size)])
-            assert next_obs.shape == (
-                self.ensemble_size,
-                self.mpc_num_action_sequences,
-                self.ob_dim,
-            )
+            assert next_obs.shape == obs.shape
 
             # get the reward for the current step in each rollout
             # HINT: use `self.env.get_reward`. `get_reward` takes 2 arguments:
@@ -193,7 +188,7 @@ class ModelBasedAgent(nn.Module):
             # respectively, and returns a tuple of `(rewards, dones)`. You can 
             # ignore `dones`. You might want to do some reshaping to make
             # `next_obs` and `acs` 2-dimensional.
-            acs = np.tile(acs, (self.ensemble_size, 1)).reshape(-1, self.ac_dim)
+            acs = np.tile(acs, (self.ensemble_size, 1, 1)).reshape(-1, self.ac_dim)
             rewards = self.env.get_reward(next_obs.reshape(-1, self.ob_dim), acs)[0].squeeze()
             rewards = rewards.reshape(self.ensemble_size, -1)
             assert rewards.shape == (self.ensemble_size, self.mpc_num_action_sequences)
@@ -226,7 +221,7 @@ class ModelBasedAgent(nn.Module):
             rewards = self.evaluate_action_sequences(obs, action_sequences)
             assert rewards.shape == (self.mpc_num_action_sequences,)
             best_index = np.argmax(rewards)
-            return action_sequences[best_index][0]
+            return action_sequences[best_index, 0]
         elif self.mpc_strategy == "cem":
             elite_mean, elite_var = None, None  # shape=(mpc_horizon, ac_dim)
             for i in range(self.cem_num_iters):
