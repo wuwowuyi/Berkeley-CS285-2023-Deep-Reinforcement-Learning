@@ -50,14 +50,14 @@ def collect_mbpo_rollout(
         next_ob = np.stack([mb_agent.get_dynamics_predictions(i, ob, ac)
                              for i in range(mb_agent.ensemble_size)])  # shape=(ensemble_size, batch_size, obs_dim)
         next_ob = np.mean(next_ob, axis=0)  # shape=(batch_size, obs_dim)
-        rew = env.get_reward(next_ob, ac)[0]
+        rew, done = env.get_reward(next_ob, ac)
 
-        ob, ac, rew, next_ob = map(np.squeeze, (ob, ac, rew, next_ob))
+        ob, ac, rew, next_ob, done = map(np.squeeze, (ob, ac, rew, next_ob, done))
         obs.append(ob)
         acs.append(ac)
         rewards.append(rew)
         next_obs.append(next_ob)
-        dones.append(False)
+        dones.append(done)
 
         ob = next_ob
 
