@@ -35,6 +35,7 @@ class IQLAgent(AWACAgent):
         )
         self.expectile = expectile
 
+    @torch.no_grad()
     def compute_advantage(
         self,
         observations: torch.Tensor,
@@ -42,9 +43,9 @@ class IQLAgent(AWACAgent):
         action_dist: Optional[torch.distributions.Categorical] = None,
     ):
         # Compute advantage with IQL
-        qa_values = self.target_critic(observations)
+        qa_values = self.critic(observations)
         q_values = torch.gather(qa_values, -1, torch.unsqueeze(actions.long(), 1))
-        vs = self.target_value_critic(observations)
+        vs = self.value_critic(observations)
         advantages = q_values - vs
         return advantages
 
@@ -62,8 +63,8 @@ class IQLAgent(AWACAgent):
         # Update Q(s, a) to match targets (based on V)
         qa_value = self.critic(observations)
         q_values = torch.gather(qa_value, -1, torch.unsqueeze(actions.long(), 1)).squeeze()
-
-        next_q_values = rewards + self.discount * (1 - dones.int()) * self.target_value_critic(next_observations)
+        with torch.no_grad():
+            next_q_values = rewards + self.discount * (1 - dones.int()) * self.target_value_critic(next_observations)
         loss = self.critic_loss(q_values, next_q_values)
 
         self.critic_optimizer.zero_grad()
@@ -104,8 +105,9 @@ class IQLAgent(AWACAgent):
         Update the value network V(s) using targets Q(s, a)
         """
         # Compute target values for V(s)
-        qa_value = self.target_critic(observations)
-        target_values = torch.gather(qa_value, -1, torch.unsqueeze(actions.long(), 1))
+        with torch.no_grad():
+            qa_value = self.target_critic(observations)
+            target_values = torch.gather(qa_value, -1, torch.unsqueeze(actions.long(), 1))
 
         # Update V(s) using the loss from the IQL paper
         vs = self.value_critic(observations)
@@ -154,7 +156,10 @@ class IQLAgent(AWACAgent):
         step: int,
     ):
         metrics = self.update_critic(observations, actions, rewards, next_observations, dones)
-        metrics["actor_loss"] = self.update_actor(observations, actions)
+        actor_loss, actor_grad_norm, adv = self.update_actor(observations, actions)
+        metrics["actor_loss"] = actor_loss
+        metrics["grad_norm_actor"] = actor_grad_norm
+        metrics['actor_adv'] = adv
 
         if step % self.target_update_period == 0:
             self.update_target_critic()
