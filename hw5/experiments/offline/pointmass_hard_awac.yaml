@@ -4,7 +4,7 @@ exp_name: "pointmass_hard_awac"
 training_steps: 200000
 dataset_name: "pointmass_hard_rnd"
 
-temperature: 10.0
+temperature: 0.2
 
 hidden_size: 64
 num_layers: 2

@@ -1,8 +1,11 @@
-from typing import Callable, Optional, Sequence, Tuple, List
+from typing import Callable, Optional, Sequence, Tuple
+
+import numpy as np
 import torch
 from torch import nn
 
 from cs285.agents.dqn_agent import DQNAgent
+from cs285.infrastructure import pytorch_util as ptu
 
 
 class AWACAgent(DQNAgent):
@@ -20,6 +23,13 @@ class AWACAgent(DQNAgent):
         self.actor = make_actor(observation_shape, num_actions)
         self.actor_optimizer = make_actor_optimizer(self.actor.parameters())
         self.temperature = temperature
+
+    @torch.no_grad()
+    def get_action(self, observation: np.ndarray, epsilon: float = 0.0):
+        obs = ptu.from_numpy(observation)[None]
+        dist = self.actor(obs)
+        return ptu.to_numpy(dist.sample().squeeze(0))
+
 
     def compute_critic_loss(
         self,
@@ -65,6 +75,7 @@ class AWACAgent(DQNAgent):
             },
         )
 
+    @torch.no_grad()
     def compute_advantage(
         self,
         observations: torch.Tensor,
@@ -72,9 +83,7 @@ class AWACAgent(DQNAgent):
         action_dist: Optional[torch.distributions.Categorical] = None,
     ):
         # compute the advantage of the actions compared to E[Q(s, a)]
-        with torch.no_grad():
-            qa_values = self.target_critic(observations)
-
+        qa_values = self.critic(observations)
         q_values = torch.gather(qa_values, -1, torch.unsqueeze(actions.long(), 1)).squeeze()
 
         # num_samples = 10  # arbitrary number to make an average.
@@ -98,22 +107,26 @@ class AWACAgent(DQNAgent):
         dist = self.actor(observations)
         adv = self.compute_advantage(observations, actions, dist)
         logp = dist.log_prob(actions)
-        weight = torch.exp(torch.clip(adv / self.temperature, min=-5, max=5))
+        #weight = torch.exp(torch.clip(adv / self.temperature, min=-5, max=5))
+        weight = torch.exp(adv / self.temperature)
         loss = -(logp * weight).mean()
 
         self.actor_optimizer.zero_grad()
         loss.backward()
+        actor_grad_norm = nn.utils.clip_grad_norm_(self.actor.parameters(), self.clip_grad_norm or float('inf'))
 
         self.actor_optimizer.step()
 
-        return loss.item()
+        return loss.item(), actor_grad_norm.item(), adv.mean().item()
 
     def update(self, observations: torch.Tensor, actions: torch.Tensor, rewards: torch.Tensor,
                next_observations: torch.Tensor, dones: torch.Tensor, step: int):
         metrics = super().update(observations, actions, rewards, next_observations, dones, step)
 
         # Update the actor.
-        actor_loss = self.update_actor(observations, actions)
+        actor_loss, actor_grad_norm, adv = self.update_actor(observations, actions)
         metrics["actor_loss"] = actor_loss
+        metrics["grad_norm_actor"] = actor_grad_norm
+        metrics['actor_adv'] = adv
 
         return metrics

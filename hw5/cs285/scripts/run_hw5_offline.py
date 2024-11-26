@@ -31,6 +31,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu)
+    print(f"seed is {args.seed}")
 
     # make the gym environment
     env = config["make_env"]()
