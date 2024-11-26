@@ -235,11 +235,11 @@ class SoftActorCritic(nn.Module):
         """
         # Compute the entropy of the action distribution.
         # Note: Think about whether to use .rsample() or .sample() here...
-        # num_samples = 10  # arbitrary number. 10 should be Ok since batch makes an average too.
-        # sampled_act = action_distribution.rsample((num_samples, ))  # shape=(num_samples, batch_size, act_dim)
-        # logp = action_distribution.log_prob(sampled_act)  # shape=(num_samples, batch_size)
-        # return torch.mean(-logp, dim=0)  # return's shape=(batch_size,)
-        return action_distribution.entropy()
+        num_samples = 10  # arbitrary number. 10 should be Ok since batch makes an average too.
+        sampled_act = action_distribution.rsample((num_samples, ))  # shape=(num_samples, batch_size, act_dim)
+        logp = action_distribution.log_prob(sampled_act)  # shape=(num_samples, batch_size)
+        return torch.mean(-logp, dim=0)  # return's shape=(batch_size,)
+        #return action_distribution.entropy()
 
     def actor_loss_reinforce(self, obs: torch.Tensor):
         batch_size = obs.shape[0]
